@@ -1,4 +1,4 @@
-<x-app-layout>
+﻿<x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             {{ __('Nowa Faktura') }}
@@ -23,11 +23,11 @@
                                 <x-text-input id="issue_date" class="block mt-1 w-full" type="date" name="issue_date" value="{{ date('Y-m-d') }}" required />
                             </div>
                             <div>
-                                <x-input-label for="sale_date" :value="__('Data sprzedaży')" />
+                                <x-input-label for="sale_date" :value="__('Data sprzedaĹĽy')" />
                                 <x-text-input id="sale_date" class="block mt-1 w-full" type="date" name="sale_date" value="{{ date('Y-m-d') }}" required />
                             </div>
                             <div>
-                                <x-input-label for="due_date" :value="__('Termin płatności')" />
+                                <x-input-label for="due_date" :value="__('Termin pĹ‚atnoĹ›ci')" />
                                 <x-text-input id="due_date" class="block mt-1 w-full" type="date" name="due_date" value="{{ date('Y-m-d', strtotime('+14 days')) }}" required />
                             </div>
                         </div>
@@ -55,10 +55,10 @@
                         </div>
 
                          <div class="mb-6">
-                            <x-input-label for="payment_method" :value="__('Metoda płatności')" />
+                            <x-input-label for="payment_method" :value="__('Metoda pĹ‚atnoĹ›ci')" />
                             <select id="payment_method" name="payment_method" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
                                 <option value="Przelew">{{ __('content.common.payment_methods.transfer') }}</option>
-                                <option value="Gotówka">{{ __('content.common.payment_methods.cash') }}</option>
+                                <option value="GotĂłwka">{{ __('content.common.payment_methods.cash') }}</option>
                                 <option value="Karta">{{ __('content.common.payment_methods.card') }}</option>
                             </select>
                         </div>
@@ -77,15 +77,15 @@
                         <table class="min-w-full">
                             <thead>
                                 <tr>
-                                    <th class="text-left py-2">Produkt / Usługa</th>
+                                    <th class="text-left py-2">Produkt / UsĹ‚uga</th>
                                     <th class="text-left py-2 w-24">{{ __('content.common.quantity') }}</th>
                                     <th class="text-left py-2 w-20">JM</th>
                                     <th class="text-left py-2 w-32">Cena @if(!$isVatExempt) Netto @else @endif</th>
                                     @if(!$isVatExempt)
                                     <th class="text-left py-2 w-24">VAT</th>
-                                    <th class="text-right py-2 w-32">Wartość Netto</th>
+                                    <th class="text-right py-2 w-32">WartoĹ›Ä‡ Netto</th>
                                     @endif
-                                    <th class="text-right py-2 w-32">Wartość @if(!$isVatExempt) Brutto @else @endif</th>
+                                    <th class="text-right py-2 w-32">WartoĹ›Ä‡ @if(!$isVatExempt) Brutto @else @endif</th>
                                     <th class="py-2 w-10"></th>
                                 </tr>
                             </thead>
@@ -136,7 +136,7 @@
                             </tbody>
                         </table>
                         <button type="button" @click="addItem()" class="mt-4 px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm font-semibold">
-                            + Dodaj Pozycję
+                            + Dodaj PozycjÄ™
                         </button>
                     </div>
                 </div>
@@ -155,12 +155,12 @@
                         </div>
                         @endif
                         <div class="flex justify-between py-2 text-xl font-bold text-indigo-700">
-                            <span>Do Zapłaty:</span>
+                            <span>Do ZapĹ‚aty:</span>
                             <span x-text="formatMoney(totals.gross)"></span>
                         </div>
                         <div class="mt-6 flex justify-end">
                             <x-primary-button>
-                                {{ __('Wystaw Fakturę') }}
+                                {{ __('Wystaw FakturÄ™') }}
                             </x-primary-button>
                         </div>
                     </div>
@@ -192,7 +192,7 @@
                         this.items[index].name = product.name;
                         this.items[index].unit = product.unit;
                         this.items[index].net_price = product.net_price;
-                        // Jeśli zwolniony z VAT, wymuś stawkę 0 (zw), nawet jak produkt ma inną w bazie
+                        // JeĹ›li zwolniony z VAT, wymuĹ› stawkÄ™ 0 (zw), nawet jak produkt ma innÄ… w bazie
                         this.items[index].vat_rate = @json($isVatExempt) ? 0 : (product.vat_rate ? product.vat_rate.rate : 0.23);
                     }
                 },
@@ -223,3 +223,4 @@
         }
     </script>
 </x-app-layout>
+

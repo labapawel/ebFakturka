@@ -1,4 +1,4 @@
-<x-app-layout>
+﻿<x-app-layout>
     <x-slot name="topbar">
         <form method="GET" class="w-full max-w-xl" oninput="clearTimeout(this._searchTimeout); this._searchTimeout = setTimeout(() => this.requestSubmit(), 400);">
             <input type="hidden" name="sort" value="{{ request('sort', 'number') }}">
@@ -100,7 +100,7 @@
                                         @else
                                         <form action="{{ route('invoices.prepare_correction', $invoice) }}" method="POST" class="inline">
                                             @csrf
-                                            <button type="submit" class="text-indigo-600 hover:text-indigo-900">Przygotuj korektę</button>
+                                            <button type="submit" class="text-indigo-600 hover:text-indigo-900">Przygotuj korektÄ™</button>
                                         </form>
                                         @endif
                                     </td>
@@ -116,3 +116,4 @@
         </div>
     </div>
 </x-app-layout>
+

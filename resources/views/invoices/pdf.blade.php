@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
@@ -71,9 +71,9 @@
     <table class="details-table" style="margin-bottom: 30px; background-color: #f9f9f9;">
         <tr>
             <td><strong>Data wystawienia:</strong><br> {{ $invoice->issue_date->format('Y-m-d') }}</td>
-            <td><strong>Data sprzedaży:</strong><br> {{ $invoice->sale_date->format('Y-m-d') }}</td>
-            <td><strong>Termin płatności:</strong><br> {{ $invoice->due_date->format('Y-m-d') }}</td>
-            <td><strong>Metoda płatności:</strong><br> {{ $invoice->payment_method }}</td>
+            <td><strong>Data sprzedaĹĽy:</strong><br> {{ $invoice->sale_date->format('Y-m-d') }}</td>
+            <td><strong>Termin pĹ‚atnoĹ›ci:</strong><br> {{ $invoice->due_date->format('Y-m-d') }}</td>
+            <td><strong>Metoda pĹ‚atnoĹ›ci:</strong><br> {{ $invoice->payment_method }}</td>
         </tr>
     </table>
 
@@ -94,9 +94,9 @@
             <th style="text-align: right;">Cena @if(!$isVatExempt || $invoice->type === 'purchase') Netto @else @endif</th>
             @if(!$isVatExempt || $invoice->type === 'purchase')
             <th style="text-align: right;">VAT</th>
-            <th style="text-align: right;">Wartość Netto</th>
+            <th style="text-align: right;">WartoĹ›Ä‡ Netto</th>
             @endif
-            <th style="text-align: right;">Wartość @if(!$isVatExempt || $invoice->type === 'purchase') Brutto @else @endif</th>
+            <th style="text-align: right;">WartoĹ›Ä‡ @if(!$isVatExempt || $invoice->type === 'purchase') Brutto @else @endif</th>
         </tr>
     </thead>
         <tbody>
@@ -129,13 +129,13 @@
         </tr>
         @endif
         <tr class="grand-total">
-            <td>Do Zapłaty:</td>
+            <td>Do ZapĹ‚aty:</td>
             <td class="text-right">{{ number_format($invoice->gross_total, 2) }} {{ $invoice->currency->code }}</td>
         </tr>
     </table>
 
     <div style="margin-top: 20px; font-size: 12px;">
-        <strong>Słownie:</strong> {{ $invoice->amount_in_words }}
+        <strong>SĹ‚ownie:</strong> {{ $invoice->amount_in_words }}
     </div>
 
     <div style="margin-top: 20px;">
@@ -151,3 +151,4 @@
     @endif
 </body>
 </html>
+
