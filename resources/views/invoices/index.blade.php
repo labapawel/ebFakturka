@@ -89,20 +89,7 @@
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <a href="{{ route('invoices.show', $invoice) }}" class="text-gray-600 hover:text-gray-900 mr-4">{{ __('content.common.preview') }}</a>
-                                        @if($invoice->ksef_status !== 'sent')
-                                        <a href="{{ route('invoices.edit', $invoice) }}" class="text-indigo-600 hover:text-indigo-900 mr-4">Edytuj</a>
-                                        <form action="{{ route('invoices.destroy', $invoice) }}" method="POST" class="inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('{{ __('content.common.confirm_delete') }}')">{{ __('content.common.delete') }}</button>
-                                        </form>
-                                        @else
-                                        <form action="{{ route('invoices.prepare_correction', $invoice) }}" method="POST" class="inline" onsubmit="return confirm('Czy na pewno przygotować korektę tej faktury?');">
-                                            @csrf
-                                            <button type="submit" class="text-indigo-600 hover:text-indigo-900">Przygotuj korektę</button>
-                                        </form>
-                                        @endif
+                                        <a href="{{ route('invoices.show', $invoice) }}" class="text-gray-600 hover:text-gray-900">{{ __('content.common.preview') }}</a>
                                     </td>
                                 </tr>
                             @endforeach
