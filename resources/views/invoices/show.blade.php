@@ -11,13 +11,13 @@
                     </span>
                 @else
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                        Nie wysĹ‚ano do KSeF
+                        Nie wysłano do KSeF
                     </span>
                 @endif
             </div>
             <div class="flex gap-2">
                 <a href="{{ route('invoices.index') }}" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25 transition ease-in-out duration-150">
-                    WrĂłÄ‡
+                    Wróć
                 </a>
                 
                 @if($invoice->ksef_status !== 'sent')
@@ -27,14 +27,14 @@
                 <form action="{{ route('invoices.send_to_ksef', $invoice) }}" method="POST">
                     @csrf
                     <button type="submit" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                        WyĹ›lij do KSeF
+                        Wyślij do KSeF
                     </button>
                 </form>
                 @else
                 <form action="{{ route('invoices.prepare_correction', $invoice) }}" method="POST">
                     @csrf
                     <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700">
-                        Przygotuj korektÄ™
+                        Przygotuj korektę
                     </button>
                 </form>
                 @endif
@@ -79,15 +79,15 @@
                             <span class="font-bold">{{ $invoice->issue_date->format('Y-m-d') }}</span>
                         </div>
                         <div>
-                            <span class="block text-gray-500">Data sprzedaĹĽy</span>
+                            <span class="block text-gray-500">Data sprzedaży</span>
                             <span class="font-bold">{{ $invoice->sale_date->format('Y-m-d') }}</span>
                         </div>
                         <div>
-                            <span class="block text-gray-500">Termin pĹ‚atnoĹ›ci</span>
+                            <span class="block text-gray-500">Termin płatności</span>
                             <span class="font-bold">{{ $invoice->due_date->format('Y-m-d') }}</span>
                         </div>
                         <div>
-                            <span class="block text-gray-500">Metoda pĹ‚atnoĹ›ci</span>
+                            <span class="block text-gray-500">Metoda płatności</span>
                             <span class="font-bold">{{ $invoice->payment_method }}</span>
                         </div>
                     </div>
@@ -117,9 +117,9 @@
                                 <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Cena @if(!$isVatExempt) Netto @else @endif</th>
                                 @if(!$isVatExempt)
                                 <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">VAT</th>
-                                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">WartoĹ›Ä‡ Netto</th>
+                                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Wartość Netto</th>
                                 @endif
-                                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">WartoĹ›Ä‡ @if(!$isVatExempt) Brutto @else @endif</th>
+                                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Wartość @if(!$isVatExempt) Brutto @else @endif</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
@@ -143,7 +143,7 @@
                     <!-- Totals -->
                     <div class="flex justify-between mt-8">
                         <div>
-                            <p class="font-bold text-gray-700">SĹ‚ownie:</p>
+                            <p class="font-bold text-gray-700">Słownie:</p>
                             <p class="text-gray-600">{{ $invoice->amount_in_words }}</p>
 
                             <div class="mt-4">
@@ -164,7 +164,7 @@
                             </div>
                             @endif
                             <div class="flex justify-between py-2 text-lg font-bold">
-                                <span>Do ZapĹ‚aty:</span>
+                                <span>Do Zapłaty:</span>
                                 <span>{{ number_format($invoice->gross_total, 2) }} {{ $invoice->currency->code }}</span>
                             </div>
                         </div>
@@ -174,4 +174,5 @@
         </div>
     </div>
 </x-app-layout>
+
 
