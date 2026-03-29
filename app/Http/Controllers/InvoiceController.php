@@ -15,6 +15,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class InvoiceController extends Controller
 {
@@ -209,7 +210,24 @@ class InvoiceController extends Controller
      */
     public function edit(Invoice $invoice)
     {
-        return redirect()->route('invoices.index')->with('error', 'Edycja faktur w przygotowaniu.');
+        if ($invoice->ksef_status === 'sent') {
+            return redirect()->route('invoices.show', $invoice)->with('error', 'Nie można edytować faktury wysłanej do KSeF.');
+        }
+
+        $contractors = Contractor::all();
+        $currencies = Currency::all();
+
+        $isVatExempt = VatSettings::isExempt();
+
+        if ($isVatExempt) {
+            $vatRates = VatRate::where('name', 'zw')->get();
+        } else {
+            $vatRates = VatRate::active()->get();
+        }
+
+        $products = Product::with('vatRate')->get();
+
+        return view('invoices.edit', compact('invoice', 'contractors', 'currencies', 'vatRates', 'products', 'isVatExempt'));
     }
 
     /**
@@ -217,7 +235,171 @@ class InvoiceController extends Controller
      */
     public function update(Request $request, Invoice $invoice)
     {
-        //
+        if ($invoice->ksef_status === 'sent') {
+            return redirect()->route('invoices.show', $invoice)->with('error', 'Nie można edytować faktury wysłanej do KSeF.');
+        }
+
+        $validated = $request->validate([
+            'number' => [
+                'required',
+                'string',
+                Rule::unique('invoices', 'number')
+                    ->ignore($invoice->id)
+                    ->where(function ($query) use ($request) {
+                        return $query->where('type', 'sales')
+                            ->where('contractor_id', $request->contractor_id);
+                    }),
+            ],
+            'issue_date' => 'required|date',
+            'sale_date' => 'required|date',
+            'due_date' => 'required|date',
+            'payment_method' => 'required|string',
+            'description' => 'nullable|string',
+            'contractor_id' => 'required|exists:contractors,id',
+            'currency_id' => 'required|exists:currencies,id',
+            'items' => 'required|array|min:1',
+            'items.*.name' => 'required|string',
+            'items.*.quantity' => 'required|numeric|min:0.001',
+            'items.*.unit' => 'required|string',
+            'items.*.net_price' => 'required|numeric|min:0',
+            'items.*.vat_rate' => 'required|numeric',
+        ]);
+
+        if ($validated['number'] !== $invoice->number) {
+            app(InvoiceNumberGenerator::class)->syncCounterFromNumber($validated['number']);
+        }
+
+        DB::transaction(function () use ($validated, $invoice) {
+            $netTotal = 0;
+            $vatTotal = 0;
+            $grossTotal = 0;
+
+            $itemsData = [];
+
+            foreach ($validated['items'] as $item) {
+                $quantity = $item['quantity'];
+                $netPrice = $item['net_price'];
+                $vatRate = $item['vat_rate'];
+
+                $netValue = $quantity * $netPrice;
+                $vatValue = $netValue * $vatRate;
+                $grossValue = $netValue + $vatValue;
+
+                $netTotal += $netValue;
+                $vatTotal += $vatValue;
+                $grossTotal += $grossValue;
+
+                $itemsData[] = [
+                    'name' => $item['name'],
+                    'quantity' => $quantity,
+                    'unit' => $item['unit'],
+                    'net_price' => $netPrice,
+                    'vat_rate' => $vatRate,
+                    'vat_amount' => $vatValue,
+                    'gross_amount' => $grossValue,
+                ];
+            }
+
+            $contractor = Contractor::findOrFail($validated['contractor_id']);
+
+            $invoice->update([
+                'number' => $validated['number'],
+                'issue_date' => $validated['issue_date'],
+                'sale_date' => $validated['sale_date'],
+                'due_date' => $validated['due_date'],
+                'payment_method' => $validated['payment_method'],
+                'description' => $validated['description'] ?? null,
+                'contractor_id' => $validated['contractor_id'],
+                'currency_id' => $validated['currency_id'],
+                'net_total' => $netTotal,
+                'vat_total' => $vatTotal,
+                'gross_total' => $grossTotal,
+                'seller_name' => config('company.name'),
+                'seller_nip' => config('company.nip'),
+                'seller_street' => config('company.street'),
+                'seller_building' => config('company.building_number'),
+                'seller_postal_code' => config('company.postal_code'),
+                'seller_city' => config('company.city'),
+                'bank_account' => config('company.bank_account'),
+                'bank_name' => config('company.bank_name'),
+                'buyer_name' => $contractor->name,
+                'buyer_nip' => $contractor->nip,
+                'buyer_street' => $contractor->address_street,
+                'buyer_building' => $contractor->address_building,
+                'buyer_apartment' => $contractor->address_apartment,
+                'buyer_postal_code' => $contractor->postal_code,
+                'buyer_city' => $contractor->city,
+            ]);
+
+            $invoice->items()->delete();
+            $invoice->items()->createMany($itemsData);
+        });
+
+        return redirect()->route('invoices.show', $invoice)->with('success', 'Faktura została zaktualizowana.');
+    }
+
+    public function prepareCorrection(Invoice $invoice)
+    {
+        if ($invoice->ksef_status !== 'sent') {
+            return redirect()->route('invoices.show', $invoice)->with('error', 'Korektę można przygotować tylko dla faktury wysłanej do KSeF.');
+        }
+
+        $numberGenerator = app(InvoiceNumberGenerator::class);
+        $number = $numberGenerator->reserveNextNumber();
+
+        $correction = DB::transaction(function () use ($invoice, $number) {
+            $correction = Invoice::create([
+                'type' => 'sales',
+                'correction_of_id' => $invoice->id,
+                'number' => $number,
+                'issue_date' => now()->toDateString(),
+                'sale_date' => $invoice->sale_date,
+                'due_date' => $invoice->due_date,
+                'payment_method' => $invoice->payment_method,
+                'description' => trim('Korekta do ' . $invoice->number . ($invoice->description ? ' - ' . $invoice->description : '')),
+                'contractor_id' => $invoice->contractor_id,
+                'user_id' => Auth::id(),
+                'currency_id' => $invoice->currency_id,
+                'net_total' => $invoice->net_total,
+                'vat_total' => $invoice->vat_total,
+                'gross_total' => $invoice->gross_total,
+                'status' => 'draft',
+                'seller_name' => $invoice->seller_name,
+                'seller_nip' => $invoice->seller_nip,
+                'seller_street' => $invoice->seller_street,
+                'seller_building' => $invoice->seller_building,
+                'seller_apartment' => $invoice->seller_apartment,
+                'seller_postal_code' => $invoice->seller_postal_code,
+                'seller_city' => $invoice->seller_city,
+                'bank_account' => $invoice->bank_account,
+                'bank_name' => $invoice->bank_name,
+                'buyer_name' => $invoice->buyer_name,
+                'buyer_nip' => $invoice->buyer_nip,
+                'buyer_street' => $invoice->buyer_street,
+                'buyer_building' => $invoice->buyer_building,
+                'buyer_apartment' => $invoice->buyer_apartment,
+                'buyer_postal_code' => $invoice->buyer_postal_code,
+                'buyer_city' => $invoice->buyer_city,
+            ]);
+
+            $itemsData = $invoice->items->map(function ($item) {
+                return [
+                    'name' => $item->name,
+                    'quantity' => $item->quantity,
+                    'unit' => $item->unit,
+                    'net_price' => $item->net_price,
+                    'vat_rate' => $item->vat_rate,
+                    'vat_amount' => $item->vat_amount,
+                    'gross_amount' => $item->gross_amount,
+                ];
+            })->all();
+
+            $correction->items()->createMany($itemsData);
+
+            return $correction;
+        });
+
+        return redirect()->route('invoices.edit', $correction)->with('success', 'Utworzono korektę faktury. Wprowadź zmiany i zapisz.');
     }
 
     /**

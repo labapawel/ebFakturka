@@ -30,6 +30,7 @@ Route::middleware('auth')->group(function () {
     Route::get('invoices/{invoice}/pdf', [InvoiceController::class, 'downloadPdf'])->name('invoices.pdf');
     Route::get('invoices/{invoice}/xml', [InvoiceController::class, 'downloadXml'])->name('invoices.xml');
     Route::post('invoices/{invoice}/send-to-ksef', [InvoiceController::class, 'sendToKsef'])->name('invoices.send_to_ksef');
+    Route::post('invoices/{invoice}/prepare-correction', [InvoiceController::class, 'prepareCorrection'])->name('invoices.prepare_correction');
 
     // Purchase Invoices
     Route::get('purchase-invoices', [App\Http\Controllers\PurchaseInvoiceController::class, 'index'])->name('purchase_invoices.index');

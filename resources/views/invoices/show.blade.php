@@ -21,10 +21,20 @@
                 </a>
                 
                 @if($invoice->ksef_status !== 'sent')
+                <a href="{{ route('invoices.edit', $invoice) }}" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                    Edytuj
+                </a>
                 <form action="{{ route('invoices.send_to_ksef', $invoice) }}" method="POST">
                     @csrf
                     <button type="submit" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
                         Wyślij do KSeF
+                    </button>
+                </form>
+                @else
+                <form action="{{ route('invoices.prepare_correction', $invoice) }}" method="POST">
+                    @csrf
+                    <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700">
+                        Przygotuj korektę
                     </button>
                 </form>
                 @endif

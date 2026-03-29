@@ -2,8 +2,11 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -20,7 +23,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Bramka dla administratora (dostęp do wszystkiego)
+        if (env('AUTO_MIGRATE_ON_BOOT', false)) {
+            $this->runAutoMigrations();
+        }
+
+        // Bramka dla administratora (dostep do wszystkiego)
         Gate::before(function ($user, $ability) {
             if ($user->isAdmin()) {
                 return true;
@@ -47,5 +54,22 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('view-ksef', function ($user) {
             return $user->isAdmin() || $user->hasPermission('view-ksef');
         });
+    }
+
+    private function runAutoMigrations(): void
+    {
+        try {
+            if (!Schema::hasTable('migrations')) {
+                return;
+            }
+
+            if (Schema::hasTable('invoice_counters')) {
+                return;
+            }
+
+            Artisan::call('migrate', ['--force' => true, '--no-interaction' => true]);
+        } catch (\Throwable $exception) {
+            Log::warning('Auto-migrate failed: ' . $exception->getMessage());
+        }
     }
 }

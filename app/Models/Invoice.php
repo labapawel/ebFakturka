@@ -11,6 +11,7 @@ class Invoice extends Model
 
     protected $fillable = [
         'type', // sales, purchase
+        'correction_of_id',
         'number',
         'issue_date',
         'sale_date',
