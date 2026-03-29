@@ -98,9 +98,9 @@
                                             <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('{{ __('content.common.confirm_delete') }}')">{{ __('content.common.delete') }}</button>
                                         </form>
                                         @else
-                                        <form action="{{ route('invoices.prepare_correction', $invoice) }}" method="POST" class="inline">
+                                        <form action="{{ route('invoices.prepare_correction', $invoice) }}" method="POST" class="inline" onsubmit="return confirm('Czy na pewno przygotować korektę tej faktury?');">
                                             @csrf
-                                            <button type="submit" class="text-indigo-600 hover:text-indigo-900">Przygotuj korektÄ™</button>
+                                            <button type="submit" class="text-indigo-600 hover:text-indigo-900">Przygotuj korektę</button>
                                         </form>
                                         @endif
                                     </td>
@@ -116,4 +116,5 @@
         </div>
     </div>
 </x-app-layout>
+
 
