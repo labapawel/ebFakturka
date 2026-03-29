@@ -214,6 +214,8 @@ class InvoiceController extends Controller
             return redirect()->route('invoices.show', $invoice)->with('error', 'Nie można edytować faktury wysłanej do KSeF.');
         }
 
+        $invoice->load(['items', 'contractor', 'currency']);
+
         $contractors = Contractor::all();
         $currencies = Currency::all();
 

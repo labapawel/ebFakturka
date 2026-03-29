@@ -17,7 +17,7 @@
         })->values();
     @endphp
 
-    <div class="py-12" x-data="invoiceForm(@json($itemsPayload))">
+    <div class="py-12" data-items='@json($itemsPayload)' x-data="invoiceForm(JSON.parse($el.dataset.items || '[]'))">
         <div class="w-full mx-auto sm:px-6 lg:px-8">
             <form method="POST" action="{{ route('invoices.update', $invoice) }}">
                 @csrf
