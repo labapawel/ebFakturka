@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\Invoice;
 use App\Models\RecurringInvoice;
+use App\Services\InvoiceNumberGenerator;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -48,10 +49,12 @@ class ProcessRecurringInvoices extends Command
 
         $count = 0;
 
+        $numberGenerator = app(InvoiceNumberGenerator::class);
+
         foreach ($recurringInvoices as $recurring) {
-            DB::transaction(function () use ($recurring, $today, &$count) {
+            DB::transaction(function () use ($recurring, $today, &$count, $numberGenerator) {
                 // Generuj numer faktury
-                $number = $this->generateNextInvoiceNumber($today);
+                $number = $numberGenerator->reserveNextNumber($today);
 
                 // Twórz Fakturę
                 $invoice = Invoice::create([
@@ -68,6 +71,21 @@ class ProcessRecurringInvoices extends Command
                     'gross_total' => $recurring->gross_total,
                     'status' => 'issued', // Domyję status
                     'type' => 'sales',
+                    'seller_name' => config('company.name'),
+                    'seller_nip' => config('company.nip'),
+                    'seller_street' => config('company.street'),
+                    'seller_building' => config('company.building_number'),
+                    'seller_postal_code' => config('company.postal_code'),
+                    'seller_city' => config('company.city'),
+                    'bank_account' => config('company.bank_account'),
+                    'bank_name' => config('company.bank_name'),
+                    'buyer_name' => $recurring->contractor->name,
+                    'buyer_nip' => $recurring->contractor->nip,
+                    'buyer_street' => $recurring->contractor->address_street,
+                    'buyer_building' => $recurring->contractor->address_building,
+                    'buyer_apartment' => $recurring->contractor->address_apartment,
+                    'buyer_postal_code' => $recurring->contractor->postal_code,
+                    'buyer_city' => $recurring->contractor->city,
                 ]);
 
                 // Twórz Pozycje
@@ -112,27 +130,4 @@ class ProcessRecurringInvoices extends Command
         $this->info("Zakończono. Wygenerowano {$count} nowych faktur.");
     }
 
-    private function generateNextInvoiceNumber($date)
-    {
-        $year = $date->format('Y');
-        $month = $date->format('m');
-        
-        // Znajdź ostatnią fakturę z tego miesiąca
-        $lastInvoice = Invoice::whereYear('issue_date', $year)
-            ->whereMonth('issue_date', $month)
-            ->where('type', 'sales')
-            ->orderBy('id', 'desc')
-            ->first();
-
-        if ($lastInvoice) {
-            // Zakładamy format FV/YYYY/MM/Numer
-            $parts = explode('/', $lastInvoice->number);
-            $lastNumber = intval(end($parts));
-            $number = $lastNumber + 1;
-        } else {
-            $number = 1;
-        }
-
-        return sprintf('FV/%s/%s/%04d', $year, $month, $number);
-    }
 }

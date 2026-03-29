@@ -7,6 +7,7 @@ use App\Models\Currency;
 use App\Models\Invoice;
 use App\Models\Product;
 use App\Models\VatRate;
+use App\Services\InvoiceNumberGenerator;
 use App\Services\KsefService;
 use App\Support\TableFilters;
 use App\Support\VatSettings;
@@ -76,7 +77,7 @@ class InvoiceController extends Controller
         $products = Product::with('vatRate')->get();
 
         // Sugerowany numer (nie gwarantuje braku kolizji przy high concurrency, ale dla MVP ok)
-        $suggestedNumber = $this->generateNextNumber();
+        $suggestedNumber = app(InvoiceNumberGenerator::class)->peekNextNumber();
 
         return view('invoices.create', compact('contractors', 'currencies', 'vatRates', 'products', 'suggestedNumber', 'isVatExempt'));
     }
@@ -87,7 +88,14 @@ class InvoiceController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'number' => 'required|string|unique:invoices,number',
+            'number' => [
+                'required',
+                'string',
+                \Illuminate\Validation\Rule::unique('invoices', 'number')->where(function ($query) use ($request) {
+                    return $query->where('type', 'sales')
+                        ->where('contractor_id', $request->contractor_id);
+                }),
+            ],
             'issue_date' => 'required|date',
             'sale_date' => 'required|date',
             'due_date' => 'required|date',
@@ -103,7 +111,18 @@ class InvoiceController extends Controller
             'items.*.vat_rate' => 'required|numeric',
         ]);
 
-        DB::transaction(function () use ($validated) {
+        $numberGenerator = app(InvoiceNumberGenerator::class);
+        $suggestedNumber = $numberGenerator->peekNextNumber();
+        $requestedNumber = $validated['number'];
+        $finalNumber = $requestedNumber;
+
+        if ($requestedNumber === $suggestedNumber) {
+            $finalNumber = $numberGenerator->reserveNextNumber();
+        } else {
+            $numberGenerator->syncCounterFromNumber($requestedNumber);
+        }
+
+        DB::transaction(function () use ($validated, $finalNumber) {
             $netTotal = 0;
             $vatTotal = 0;
             $grossTotal = 0;
@@ -134,8 +153,11 @@ class InvoiceController extends Controller
                 ];
             }
 
+            $contractor = Contractor::findOrFail($validated['contractor_id']);
+
             $invoice = Invoice::create([
-                'number' => $validated['number'],
+                'type' => 'sales',
+                'number' => $finalNumber,
                 'issue_date' => $validated['issue_date'],
                 'sale_date' => $validated['sale_date'],
                 'due_date' => $validated['due_date'],
@@ -148,6 +170,21 @@ class InvoiceController extends Controller
                 'vat_total' => $vatTotal,
                 'gross_total' => $grossTotal,
                 'status' => 'issued',
+                'seller_name' => config('company.name'),
+                'seller_nip' => config('company.nip'),
+                'seller_street' => config('company.street'),
+                'seller_building' => config('company.building_number'),
+                'seller_postal_code' => config('company.postal_code'),
+                'seller_city' => config('company.city'),
+                'bank_account' => config('company.bank_account'),
+                'bank_name' => config('company.bank_name'),
+                'buyer_name' => $contractor->name,
+                'buyer_nip' => $contractor->nip,
+                'buyer_street' => $contractor->address_street,
+                'buyer_building' => $contractor->address_building,
+                'buyer_apartment' => $contractor->address_apartment,
+                'buyer_postal_code' => $contractor->postal_code,
+                'buyer_city' => $contractor->city,
             ]);
 
             $invoice->items()->createMany($itemsData);
@@ -195,51 +232,6 @@ class InvoiceController extends Controller
         $invoice->delete();
 
         return redirect()->route('invoices.index')->with('success', 'Faktura została usunięta.');
-    }
-
-    private function generateNextNumber()
-    {
-        $format = env('INVOICE_NUMBER_FORMAT', 'FV/{Y}/{m}/{nr}');
-
-        $year = date('Y');
-        $month = date('m');
-        $day = date('d');
-
-        $prefixPattern = str_replace(
-            ['{Y}', '{y}', '{m}', '{d}'],
-            [$year, date('y'), $month, $day],
-            $format
-        );
-
-        $parts = explode('{nr}', $prefixPattern);
-        $prefix = $parts[0] ?? '';
-        $suffix = $parts[1] ?? '';
-
-        $lastInvoice = Invoice::where('number', 'like', $prefix . '%' . $suffix)
-            ->whereRaw('LENGTH(number) = ?', [strlen($prefix) + strlen($suffix) + substr_count($format, '0') + 1])
-            ->orderByRaw('LENGTH(number) DESC')
-            ->orderBy('number', 'desc')
-            ->first();
-
-        $lastInvoice = Invoice::where('number', 'like', $prefix . '%' . $suffix)
-            ->orderBy('id', 'desc')
-            ->first();
-
-        $nextNumber = 1;
-
-        if ($lastInvoice) {
-            $numberStr = substr($lastInvoice->number, strlen($prefix));
-            if ($suffix) {
-                $numberStr = substr($numberStr, 0, -strlen($suffix));
-            }
-
-            $lastNumber = intval($numberStr);
-            $nextNumber = $lastNumber + 1;
-        }
-
-        $padding = env('INVOICE_NUMBER_PADDING', 3);
-
-        return $prefix . str_pad($nextNumber, $padding, '0', STR_PAD_LEFT) . $suffix;
     }
 
     public function downloadPdf(Invoice $invoice)

@@ -29,35 +29,41 @@
         <tr>
             <td width="50%">
                 <strong>Sprzedawca:</strong><br>
-                @if($invoice->type === 'purchase')
-                    {{ $invoice->contractor->name }}<br>
-                    {{ $invoice->contractor->address_street }} {{ $invoice->contractor->address_building }}<br>
-                    {{ $invoice->contractor->postal_code }} {{ $invoice->contractor->city }}<br>
-                    NIP: {{ $invoice->contractor->nip }}
-                @else
-                    {{ config('company.name') }}<br>
-                    {{ config('company.address_line_1') }}<br>
-                    {{ config('company.address_line_2') }}<br>
-                    NIP: {{ config('company.nip') }}<br>
-                    @if(config('company.bank_account'))
-                    Bank: {{ config('company.bank_name') }}<br>
-                    Konto: {{ config('company.bank_account') }}
-                    @endif
+                @php
+                    $sellerName = $invoice->seller_name ?: ($invoice->type === 'purchase' ? ($invoice->contractor->name ?? '') : config('company.name'));
+                    $sellerNip = $invoice->seller_nip ?: ($invoice->type === 'purchase' ? ($invoice->contractor->nip ?? '') : config('company.nip'));
+                    $sellerStreet = $invoice->seller_street ?: ($invoice->type === 'purchase' ? ($invoice->contractor->address_street ?? '') : config('company.street'));
+                    $sellerBuilding = $invoice->seller_building ?: ($invoice->type === 'purchase' ? ($invoice->contractor->address_building ?? '') : config('company.building_number'));
+                    $sellerApartment = $invoice->seller_apartment ?: ($invoice->type === 'purchase' ? ($invoice->contractor->address_apartment ?? '') : null);
+                    $sellerPostalCode = $invoice->seller_postal_code ?: ($invoice->type === 'purchase' ? ($invoice->contractor->postal_code ?? '') : config('company.postal_code'));
+                    $sellerCity = $invoice->seller_city ?: ($invoice->type === 'purchase' ? ($invoice->contractor->city ?? '') : config('company.city'));
+                    $bankName = $invoice->bank_name ?: ($invoice->type === 'sales' ? config('company.bank_name') : null);
+                    $bankAccount = $invoice->bank_account ?: ($invoice->type === 'sales' ? config('company.bank_account') : null);
+                @endphp
+                {{ $sellerName }}<br>
+                {{ $sellerStreet }} {{ $sellerBuilding }}@if($sellerApartment)/{{ $sellerApartment }}@endif<br>
+                {{ $sellerPostalCode }} {{ $sellerCity }}<br>
+                NIP: {{ $sellerNip }}
+                @if($bankAccount)
+                    <br>Bank: {{ $bankName }}
+                    <br>Konto: {{ $bankAccount }}
                 @endif
             </td>
             <td width="50%" class="text-right">
                 <strong>Nabywca:</strong><br>
-                @if($invoice->type === 'purchase')
-                    {{ config('company.name') }}<br>
-                    {{ config('company.address_line_1') }}<br>
-                    {{ config('company.address_line_2') }}<br>
-                    NIP: {{ config('company.nip') }}
-                @else
-                    {{ $invoice->contractor->name }}<br>
-                    {{ $invoice->contractor->address_street }} {{ $invoice->contractor->address_building }}<br>
-                    {{ $invoice->contractor->postal_code }} {{ $invoice->contractor->city }}<br>
-                    NIP: {{ $invoice->contractor->nip }}
-                @endif
+                @php
+                    $buyerName = $invoice->buyer_name ?: ($invoice->type === 'sales' ? ($invoice->contractor->name ?? '') : config('company.name'));
+                    $buyerNip = $invoice->buyer_nip ?: ($invoice->type === 'sales' ? ($invoice->contractor->nip ?? '') : config('company.nip'));
+                    $buyerStreet = $invoice->buyer_street ?: ($invoice->type === 'sales' ? ($invoice->contractor->address_street ?? '') : config('company.street'));
+                    $buyerBuilding = $invoice->buyer_building ?: ($invoice->type === 'sales' ? ($invoice->contractor->address_building ?? '') : config('company.building_number'));
+                    $buyerApartment = $invoice->buyer_apartment ?: ($invoice->type === 'sales' ? ($invoice->contractor->address_apartment ?? '') : null);
+                    $buyerPostalCode = $invoice->buyer_postal_code ?: ($invoice->type === 'sales' ? ($invoice->contractor->postal_code ?? '') : config('company.postal_code'));
+                    $buyerCity = $invoice->buyer_city ?: ($invoice->type === 'sales' ? ($invoice->contractor->city ?? '') : config('company.city'));
+                @endphp
+                {{ $buyerName }}<br>
+                {{ $buyerStreet }} {{ $buyerBuilding }}@if($buyerApartment)/{{ $buyerApartment }}@endif<br>
+                {{ $buyerPostalCode }} {{ $buyerCity }}<br>
+                NIP: {{ $buyerNip }}
             </td>
         </tr>
     </table>
@@ -132,13 +138,11 @@
         <strong>Słownie:</strong> {{ $invoice->amount_in_words }}
     </div>
 
-    @if($invoice->type !== 'purchase')
     <div style="margin-top: 20px;">
         <strong>Dane do przelewu:</strong><br>
-        Bank: {{ config('company.bank_name', 'Brak nazwy banku') }}<br>
-        Konto: <strong>{{ config('company.bank_account', 'Brak numeru konta') }}</strong>
+        Bank: {{ $bankName ?: 'Brak nazwy banku' }}<br>
+        Konto: <strong>{{ $bankAccount ?: 'Brak numeru konta' }}</strong>
     </div>
-    @endif
 
     @if($isVatExempt && $invoice->type !== 'purchase' && !empty($vatExemptionReason))
         <div style="margin-top: 50px; font-size: 10px; border-top: 1px solid #ccc; padding-top: 10px;">

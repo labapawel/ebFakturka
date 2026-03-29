@@ -60,7 +60,7 @@ class KsefService
         $naglowek->addChild('KodFormularza', 'FA')->addAttribute('kodSystemowy', 'FA (3)');
         $naglowek->KodFormularza->addAttribute('wersjaSchemy', '1-0E');
         $naglowek->addChild('WariantFormularza', '3');
-        $naglowek->addChild('DataWytworzeniaFa', now()->format('Y-m-d\TH:i:s\Z'));
+        $naglowek->addChild('DataWytworzeniaFa', now()->format('Y-m-d\TH:i:s.v\Z'));
         $naglowek->addChild('SystemInfo', 'ebFakturka');
 
         if ($invoice->type === 'purchase') {
@@ -110,33 +110,31 @@ class KsefService
         $fa->addChild('P_1', $invoice->issue_date->format('Y-m-d'));
         $fa->addChild('P_2', $invoice->number);
         $fa->addChild('P_6', $invoice->sale_date->format('Y-m-d'));
-        $fa->addChild('RodzajFaktury', 'VAT');
 
         $isVatExempt = VatSettings::isExempt();
         $vatExemptionReason = VatSettings::legalBasis();
 
         if ($isVatExempt) {
-            $fa->addChild('P_13_7', number_format($invoice->net_total, 2, '.', ''));
-            $fa->addChild('P_15', number_format($invoice->gross_total, 2, '.', ''));
-            $zwolnienie = $fa->addChild('Zwolnienie');
-            $zwolnienie->addChild('P_19', '1');
-            if ($vatExemptionReason) {
-                $zwolnienie->addChild(VatSettings::reasonField(), $vatExemptionReason);
-            }
+            $fa->addChild('P_13_7', $this->formatKsefAmount($invoice->net_total));
+            $fa->addChild('P_15', $this->formatKsefAmount($invoice->gross_total));
         } else {
-            $fa->addChild('P_13_1', number_format($invoice->net_total, 2, '.', ''));
-            $fa->addChild('P_14_1', number_format($invoice->vat_total, 2, '.', ''));
-            $fa->addChild('P_15', number_format($invoice->gross_total, 2, '.', ''));
+            $fa->addChild('P_13_1', $this->formatKsefAmount($invoice->net_total));
+            $fa->addChild('P_14_1', $this->formatKsefAmount($invoice->vat_total));
+            $fa->addChild('P_15', $this->formatKsefAmount($invoice->gross_total));
         }
+
+        $this->appendAnnotations($fa, $isVatExempt, $vatExemptionReason);
+
+        $fa->addChild('RodzajFaktury', 'VAT');
 
         foreach ($invoice->items as $index => $item) {
             $wiersz = $fa->addChild('FaWiersz');
             $wiersz->addChild('NrWierszaFa', $index + 1);
             $wiersz->addChild('P_7', $item->name);
             $wiersz->addChild('P_8A', $item->unit);
-            $wiersz->addChild('P_8B', number_format($item->quantity, 2, '.', ''));
-            $wiersz->addChild('P_9A', number_format($item->net_price, 2, '.', ''));
-            $wiersz->addChild('P_11', number_format($item->net_price * $item->quantity, 2, '.', ''));
+            $wiersz->addChild('P_8B', $this->formatKsefAmount($item->quantity));
+            $wiersz->addChild('P_9A', $this->formatKsefAmount($item->net_price));
+            $wiersz->addChild('P_11', $this->formatKsefAmount($item->net_price * $item->quantity));
 
             if ($isVatExempt) {
                 $wiersz->addChild('P_12', 'zw');
@@ -186,6 +184,22 @@ class KsefService
                     'net_total' => $invoiceData['net_total'],
                     'vat_total' => $invoiceData['vat_total'],
                     'gross_total' => $invoiceData['gross_total'],
+                    'bank_account' => $invoiceData['bank_account'] ?? null,
+                    'bank_name' => $invoiceData['bank_name'] ?? null,
+                    'seller_name' => $invoiceData['contractor']['name'],
+                    'seller_nip' => $invoiceData['contractor']['nip'],
+                    'seller_street' => $invoiceData['contractor']['address_street'],
+                    'seller_building' => $invoiceData['contractor']['address_building'],
+                    'seller_apartment' => $invoiceData['contractor']['address_apartment'],
+                    'seller_postal_code' => $invoiceData['contractor']['postal_code'],
+                    'seller_city' => $invoiceData['contractor']['city'],
+                    'buyer_name' => $invoiceData['buyer']['name'],
+                    'buyer_nip' => $invoiceData['buyer']['nip'],
+                    'buyer_street' => $invoiceData['buyer']['address_street'],
+                    'buyer_building' => $invoiceData['buyer']['address_building'],
+                    'buyer_apartment' => $invoiceData['buyer']['address_apartment'],
+                    'buyer_postal_code' => $invoiceData['buyer']['postal_code'],
+                    'buyer_city' => $invoiceData['buyer']['city'],
                     'status' => 'issued',
                     'ksef_status' => 'fetched',
                 ]
@@ -354,23 +368,22 @@ class KsefService
             : $issueDate->copy()->addDays(14);
 
         $currencyCode = $this->firstValue($xpath, "//*[local-name()='Fa']/*[local-name()='KodWaluty']") ?: 'PLN';
+
+        $paymentMethodCode = $this->firstValue($xpath, "//*[local-name()='Fa']/*[local-name()='Platnosc']/*[local-name()='FormaPlatnosci']");
+        $paymentMethod = $this->mapKsefPaymentMethod($paymentMethodCode);
+
+        $dueDateValue = $this->firstValue($xpath, "//*[local-name()='Fa']/*[local-name()='Platnosc']/*[local-name()='TerminPlatnosci']/*[local-name()='Termin']");
+        $dueDate = $dueDateValue ? Carbon::parse($dueDateValue) : $issueDate->copy()->addDays(14);
+
+        $bankAccount = $this->firstValue($xpath, "//*[local-name()='Fa']/*[local-name()='Platnosc']/*[local-name()='RachunekBankowy']/*[local-name()='NrRB']");
+        $bankName = $this->firstValue($xpath, "//*[local-name()='Fa']/*[local-name()='Platnosc']/*[local-name()='RachunekBankowy']/*[local-name()='NazwaBanku']");
+
         $netTotal = $this->sumValues($xpath, "//*[local-name()='Fa']/*[starts-with(local-name(),'P_13_')]");
         $vatTotal = $this->sumValues($xpath, "//*[local-name()='Fa']/*[starts-with(local-name(),'P_14_')]");
         $grossTotal = $this->floatValue($this->firstValue($xpath, "//*[local-name()='Fa']/*[local-name()='P_15']"));
 
-        $contractor = [
-            'name' => $this->firstValue($xpath, "//*[local-name()='Podmiot1']//*[local-name()='Nazwa']")
-                ?: trim(
-                    ($this->firstValue($xpath, "//*[local-name()='Podmiot1']//*[local-name()='ImiePierwsze']") ?? '') . ' ' .
-                    ($this->firstValue($xpath, "//*[local-name()='Podmiot1']//*[local-name()='Nazwisko']") ?? '')
-                ),
-            'nip' => $this->firstValue($xpath, "//*[local-name()='Podmiot1']//*[local-name()='NIP']"),
-            'address_street' => $this->firstValue($xpath, "//*[local-name()='Podmiot1']//*[local-name()='AdresPol']/*[local-name()='Ulica']"),
-            'address_building' => $this->firstValue($xpath, "//*[local-name()='Podmiot1']//*[local-name()='AdresPol']/*[local-name()='NrDomu']"),
-            'address_apartment' => $this->firstValue($xpath, "//*[local-name()='Podmiot1']//*[local-name()='AdresPol']/*[local-name()='NrLokalu']"),
-            'postal_code' => $this->firstValue($xpath, "//*[local-name()='Podmiot1']//*[local-name()='AdresPol']/*[local-name()='KodPocztowy']"),
-            'city' => $this->firstValue($xpath, "//*[local-name()='Podmiot1']//*[local-name()='AdresPol']/*[local-name()='Miejscowosc']"),
-        ];
+        $contractor = $this->extractPodmiotData($xpath, 'Podmiot1');
+        $buyer = $this->extractPodmiotData($xpath, 'Podmiot2');
 
         if (empty($contractor['name'])) {
             throw new RuntimeException('Pobrana faktura z KSeF nie zawiera danych sprzedawcy.');
@@ -414,12 +427,15 @@ class KsefService
             'issue_date' => $issueDate->toDateString(),
             'sale_date' => $saleDate->toDateString(),
             'due_date' => $dueDate->toDateString(),
-            'payment_method' => 'Przelew',
+            'payment_method' => $paymentMethod,
+            'bank_account' => $bankAccount,
+            'bank_name' => $bankName,
             'currency_code' => $currencyCode,
             'net_total' => $netTotal,
             'vat_total' => $vatTotal,
             'gross_total' => $grossTotal,
             'contractor' => $contractor,
+            'buyer' => $buyer,
             'items' => $items,
         ];
     }
@@ -429,6 +445,25 @@ class KsefService
         $node = $xpath->query($expression, $contextNode)->item(0);
 
         return $node ? trim($node->textContent) : null;
+    }
+
+    private function extractPodmiotData(\DOMXPath $xpath, string $podmiotName): array
+    {
+        $p = "//*[local-name()='$podmiotName']";
+
+        return [
+            'name' => $this->firstValue($xpath, "$p//*[local-name()='Nazwa']")
+                ?: trim(
+                    ($this->firstValue($xpath, "$p//*[local-name()='ImiePierwsze']") ?? '') . ' ' .
+                    ($this->firstValue($xpath, "$p//*[local-name()='Nazwisko']") ?? '')
+                ),
+            'nip' => $this->firstValue($xpath, "$p//*[local-name()='NIP']"),
+            'address_street' => $this->firstValue($xpath, "$p//*[local-name()='Ulica']") ?: $this->firstValue($xpath, "$p//*[local-name()='AdresL1']"),
+            'address_building' => $this->firstValue($xpath, "$p//*[local-name()='NrDomu']"),
+            'address_apartment' => $this->firstValue($xpath, "$p//*[local-name()='NrLokalu']"),
+            'postal_code' => $this->firstValue($xpath, "$p//*[local-name()='KodPocztowy']"),
+            'city' => $this->firstValue($xpath, "$p//*[local-name()='Miejscowosc']") ?: $this->firstValue($xpath, "$p//*[local-name()='AdresL2']"),
+        ];
     }
 
     private function sumValues(\DOMXPath $xpath, string $expression): float
@@ -496,13 +531,19 @@ class KsefService
 
     private function appendContractorMainAddress(SimpleXMLElement $node, Contractor $contractor): void
     {
-        $address = $node->addChild('Adres');
-        $address->addChild('KodKraju', 'PL');
-        $address->addChild('AdresL1', $this->formatAddressLine(
+        $line1 = $this->formatAddressLine(
             $contractor->ksef_legal_street ?: $contractor->address_street,
             $contractor->ksef_legal_building ?: $contractor->address_building,
             $contractor->ksef_legal_apartment ?: $contractor->address_apartment
-        ));
+        );
+
+        if ($line1 === '') {
+            return;
+        }
+
+        $address = $node->addChild('Adres');
+        $address->addChild('KodKraju', 'PL');
+        $address->addChild('AdresL1', $line1);
 
         $line2 = trim(($contractor->ksef_legal_postal_code ?: $contractor->postal_code).' '.($contractor->ksef_legal_city ?: $contractor->city));
         if ($line2 !== '') {
@@ -606,5 +647,53 @@ class KsefService
         $normalized = strtoupper((string) preg_replace('/\s+/', '', (string) $bankAccount));
 
         return $normalized !== '' ? $normalized : null;
+    }
+
+    private function formatKsefAmount(float $amount): string
+    {
+        $formatted = number_format($amount, 2, '.', '');
+
+        return rtrim(rtrim($formatted, '0'), '.');
+    }
+
+    private function appendAnnotations(SimpleXMLElement $fa, bool $isVatExempt, ?string $vatExemptionReason): void
+    {
+        $adnotacje = $fa->addChild('Adnotacje');
+        $adnotacje->addChild('P_16', '2');
+        $adnotacje->addChild('P_17', '2');
+        $adnotacje->addChild('P_18', '2');
+        $adnotacje->addChild('P_18A', '2');
+
+        $zwolnienie = $adnotacje->addChild('Zwolnienie');
+        if ($isVatExempt) {
+            $zwolnienie->addChild('P_19', '1');
+            if ($vatExemptionReason) {
+                $zwolnienie->addChild(VatSettings::reasonField(), $vatExemptionReason);
+            }
+        } else {
+            $zwolnienie->addChild('P_19N', '1');
+        }
+
+        $nst = $adnotacje->addChild('NoweSrodkiTransportu');
+        $nst->addChild('P_22N', '1');
+
+        $adnotacje->addChild('P_23', '2');
+
+        $pMarzy = $adnotacje->addChild('PMarzy');
+        $pMarzy->addChild('P_PMarzyN', '1');
+    }
+
+    private function mapKsefPaymentMethod(?string $code): string
+    {
+        return match ((int) $code) {
+            1 => 'Gotówka',
+            2 => 'Karta',
+            3 => 'Bon',
+            4 => 'Czek',
+            5 => 'Kredyt',
+            6 => 'Przelew',
+            7 => 'Mobilna',
+            default => 'Przelew',
+        };
     }
 }

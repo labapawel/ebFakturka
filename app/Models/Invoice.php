@@ -26,6 +26,22 @@ class Invoice extends Model
         'status',
         'ksef_number',
         'ksef_status',
+        'bank_account',
+        'bank_name',
+        'seller_name',
+        'seller_nip',
+        'seller_street',
+        'seller_building',
+        'seller_apartment',
+        'seller_postal_code',
+        'seller_city',
+        'buyer_name',
+        'buyer_nip',
+        'buyer_street',
+        'buyer_building',
+        'buyer_apartment',
+        'buyer_postal_code',
+        'buyer_city',
     ];
 
     public function scopeSales($query)
