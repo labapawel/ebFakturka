@@ -16,7 +16,11 @@
             || old('ksef_correspondence_city')
             || old('ksef_customer_number');
     @endphp
-    <div class="py-12" x-data='{ showLegalKsef: {{ $showLegalKsef ? "true" : "false" }}, showCorrespondenceKsef: {{ $showCorrespondenceKsef ? "true" : "false" }} }'>
+    <div class="py-12" x-data='{ 
+        showLegalKsef: {{ $showLegalKsef ? "true" : "false" }}, 
+        showCorrespondenceKsef: {{ $showCorrespondenceKsef ? "true" : "false" }},
+        is_jst: {{ old("is_jst") ? "true" : "false" }}
+    }'>
         <div class="w-full mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
@@ -156,12 +160,56 @@
                             </div>
                         </div>
 
+                        <div class="mt-8 border-t border-gray-200 pt-6">
+                            <label for="show_recipient_jst" class="inline-flex items-center gap-3">
+                                <input id="show_recipient_jst" type="checkbox" x-model="is_jst" name="is_jst" value="1" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" {{ old('is_jst') ? 'checked' : '' }}>
+                                <span class="text-sm font-medium text-gray-800">Kontrahent jest Jednostką Samorządu Terytorialnego (JST)</span>
+                            </label>
+                        </div>
+
+                        <div class="mt-4 border-t border-gray-200 pt-6" x-show="is_jst" x-transition>
+                            <h3 class="text-base font-semibold text-gray-900">Dane Odbiorcy (JST)</h3>
+                            <p class="mt-1 text-sm text-gray-500">W przypadku JST (np. Szkoła), główny NIP powyżej to NIP Nabywcy (Gmina). Poniżej wpisz dane Odbiorcy.</p>
+                            
+                            <div class="mt-4">
+                                <x-input-label for="recipient_nip" :value="'NIP Odbiorcy (jeśli inny niż Nabywcy)'" />
+                                <x-text-input id="recipient_nip" class="block mt-1 w-full" type="text" name="recipient_nip" :value="old('recipient_nip')" />
+                            </div>
+
+                            <div class="mt-4">
+                                <x-input-label for="recipient_name" :value="'Nazwa Odbiorcy / Jednostki'" />
+                                <x-text-input id="recipient_name" class="block mt-1 w-full" type="text" name="recipient_name" :value="old('recipient_name')" />
+                            </div>
+
+                            <div class="grid grid-cols-3 gap-4 mt-4">
+                                <div class="col-span-1">
+                                    <x-input-label for="recipient_street" :value="'Ulica Odbiorcy'" />
+                                    <x-text-input id="recipient_street" class="block mt-1 w-full" type="text" name="recipient_street" :value="old('recipient_street')" />
+                                </div>
+                                <div>
+                                    <x-input-label for="recipient_building" :value="'Nr domu Odbiorcy'" />
+                                    <x-text-input id="recipient_building" class="block mt-1 w-full" type="text" name="recipient_building" :value="old('recipient_building')" />
+                                </div>
+                                <div>
+                                    <x-input-label for="recipient_apartment" :value="'Nr lokalu Odbiorcy'" />
+                                    <x-text-input id="recipient_apartment" class="block mt-1 w-full" type="text" name="recipient_apartment" :value="old('recipient_apartment')" />
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4 mt-4">
+                                <div>
+                                    <x-input-label for="recipient_postal_code" :value="'Kod pocztowy Odbiorcy'" />
+                                    <x-text-input id="recipient_postal_code" class="block mt-1 w-full" type="text" name="recipient_postal_code" :value="old('recipient_postal_code')" />
+                                </div>
+                                <div>
+                                    <x-input-label for="recipient_city" :value="'Miasto Odbiorcy'" />
+                                    <x-text-input id="recipient_city" class="block mt-1 w-full" type="text" name="recipient_city" :value="old('recipient_city')" />
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="space-y-3 mt-4">
                             <div class="flex flex-col gap-2">
-                                <label for="is_jst" class="inline-flex items-center gap-3">
-                                    <input id="is_jst" type="checkbox" name="is_jst" value="1" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" {{ old('is_jst') ? 'checked' : '' }}>
-                                    <span class="text-sm text-gray-700">{{ __('content.contractors.is_jst') }}</span>
-                                </label>
                                 <label for="is_vat_group_member" class="inline-flex items-center gap-3">
                                     <input id="is_vat_group_member" type="checkbox" name="is_vat_group_member" value="1" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" {{ old('is_vat_group_member') ? 'checked' : '' }}>
                                     <span class="text-sm text-gray-700">{{ __('content.contractors.is_vat_group_member') }}</span>

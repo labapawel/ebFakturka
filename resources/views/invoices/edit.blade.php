@@ -1,4 +1,4 @@
-﻿<x-app-layout>
+<x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             Edycja Faktury {{ $invoice->number }}
@@ -49,7 +49,7 @@
                         <div class="grid grid-cols-3 gap-4 mb-6">
                             <div class="col-span-2">
                                 <x-input-label for="contractor_id" :value="__('Kontrahent')" />
-                                <select id="contractor_id" name="contractor_id" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                                <select id="contractor_id" name="contractor_id" @change="updateContractorData($event.target.value)" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
                                     <option value="">-- Wybierz kontrahenta --</option>
                                     @foreach($contractors as $contractor)
                                         <option value="{{ $contractor->id }}" {{ (string) old('contractor_id', $invoice->contractor_id) === (string) $contractor->id ? 'selected' : '' }}>{{ $contractor->name }} ({{ $contractor->nip }})</option>
@@ -79,11 +79,35 @@
                             </select>
                         </div>
 
-                         <div class="mb-6">
-                            <x-input-label for="description" :value="__('Opis / Uwagi (opcjonalne)')" />
-                            <textarea id="description" name="description" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm h-24">{{ old('description', $invoice->description) }}</textarea>
-                            <x-input-error :messages="$errors->get('description')" class="mt-2" />
+                        <div x-show="isJst" x-transition class="mt-6 p-4 bg-blue-50 border-l-4 border-blue-400 rounded-r-md">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <h3 class="text-sm font-medium text-blue-800">Jednostka Samorządu Terytorialnego (JST)</h3>
+                                    <div class="mt-2 text-sm text-blue-700">
+                                        <p>Faktura uwzględni dane Odbiorcy:</p>
+                                        <div class="mt-1 font-semibold">
+                                            <span x-text="recipient_data.name"></span><br>
+                                            <span x-show="recipient_data.nip">NIP: <span x-text="recipient_data.nip"></span><br></span>
+                                            <span x-text="recipient_data.street"></span> <span x-text="recipient_data.building"></span><span x-show="recipient_data.apartment">/<span x-text="recipient_data.apartment"></span></span><br>
+                                            <span x-text="recipient_data.postal_code"></span> <span x-text="recipient_data.city"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+
+                        <input type="hidden" name="buyer_recipient_name" x-model="recipient_data.name">
+                        <input type="hidden" name="buyer_recipient_nip" x-model="recipient_data.nip">
+                        <input type="hidden" name="buyer_recipient_street" x-model="recipient_data.street">
+                        <input type="hidden" name="buyer_recipient_building" x-model="recipient_data.building">
+                        <input type="hidden" name="buyer_recipient_apartment" x-model="recipient_data.apartment">
+                        <input type="hidden" name="buyer_recipient_postal_code" x-model="recipient_data.postal_code">
+                        <input type="hidden" name="buyer_recipient_city" x-model="recipient_data.city">
                     </div>
                 </div>
 
@@ -191,6 +215,40 @@
                     ? initialItems
                     : [{ name: '', quantity: 1, unit: 'szt.', net_price: 0, vat_rate: {{ $isVatExempt ? 0 : 0.23 }} }],
                 availableProducts: @json($products),
+                contractors: @json($contractors),
+                isJst: {{ !empty($invoice->buyer_recipient_name) ? 'true' : 'false' }},
+                recipient_data: {
+                    name: '{{ $invoice->buyer_recipient_name ?? "" }}',
+                    nip: '{{ $invoice->buyer_recipient_nip ?? "" }}',
+                    street: '{{ $invoice->buyer_recipient_street ?? "" }}',
+                    building: '{{ $invoice->buyer_recipient_building ?? "" }}',
+                    apartment: '{{ $invoice->buyer_recipient_apartment ?? "" }}',
+                    postal_code: '{{ $invoice->buyer_recipient_postal_code ?? "" }}',
+                    city: '{{ $invoice->buyer_recipient_city ?? "" }}'
+                },
+
+                updateContractorData(contractorId) {
+                    if (!contractorId) {
+                        this.isJst = false;
+                        return;
+                    }
+
+                    const contractor = this.contractors.find(c => c.id == contractorId);
+                    if (contractor) {
+                        this.isJst = !!contractor.is_jst;
+                        if (this.isJst) {
+                            this.recipient_data = {
+                                name: contractor.recipient_name || '',
+                                nip: contractor.recipient_nip || '',
+                                street: contractor.recipient_street || '',
+                                building: contractor.recipient_building || '',
+                                apartment: contractor.recipient_apartment || '',
+                                postal_code: contractor.recipient_postal_code || '',
+                                city: contractor.recipient_city || ''
+                            };
+                        }
+                    }
+                },
 
                 addItem() {
                     this.items.push({ name: '', quantity: 1, unit: 'szt.', net_price: 0, vat_rate: {{ $isVatExempt ? 0 : 0.23 }} });
