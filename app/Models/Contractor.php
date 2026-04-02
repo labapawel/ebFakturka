@@ -33,6 +33,13 @@ class Contractor extends Model
         'is_jst',
         'is_vat_group_member',
         'gus_data',
+        'recipient_name',
+        'recipient_nip',
+        'recipient_street',
+        'recipient_building',
+        'recipient_apartment',
+        'recipient_postal_code',
+        'recipient_city',
     ];
 
     protected $casts = [

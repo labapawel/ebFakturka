@@ -110,6 +110,13 @@ class InvoiceController extends Controller
             'items.*.unit' => 'required|string',
             'items.*.net_price' => 'required|numeric|min:0',
             'items.*.vat_rate' => 'required|numeric',
+            'buyer_recipient_name' => 'nullable|string|max:255',
+            'buyer_recipient_nip' => 'nullable|string|max:20',
+            'buyer_recipient_street' => 'nullable|string|max:255',
+            'buyer_recipient_building' => 'nullable|string|max:20',
+            'buyer_recipient_apartment' => 'nullable|string|max:20',
+            'buyer_recipient_postal_code' => 'nullable|string|max:20',
+            'buyer_recipient_city' => 'nullable|string|max:255',
         ]);
 
         $numberGenerator = app(InvoiceNumberGenerator::class);
@@ -186,6 +193,13 @@ class InvoiceController extends Controller
                 'buyer_apartment' => $contractor->address_apartment,
                 'buyer_postal_code' => $contractor->postal_code,
                 'buyer_city' => $contractor->city,
+                'buyer_recipient_name' => $validated['buyer_recipient_name'] ?? $contractor->recipient_name,
+                'buyer_recipient_nip' => $validated['buyer_recipient_nip'] ?? $contractor->recipient_nip,
+                'buyer_recipient_street' => $validated['buyer_recipient_street'] ?? $contractor->recipient_street,
+                'buyer_recipient_building' => $validated['buyer_recipient_building'] ?? $contractor->recipient_building,
+                'buyer_recipient_apartment' => $validated['buyer_recipient_apartment'] ?? $contractor->recipient_apartment,
+                'buyer_recipient_postal_code' => $validated['buyer_recipient_postal_code'] ?? $contractor->recipient_postal_code,
+                'buyer_recipient_city' => $validated['buyer_recipient_city'] ?? $contractor->recipient_city,
             ]);
 
             $invoice->items()->createMany($itemsData);
@@ -265,6 +279,13 @@ class InvoiceController extends Controller
             'items.*.unit' => 'required|string',
             'items.*.net_price' => 'required|numeric|min:0',
             'items.*.vat_rate' => 'required|numeric',
+            'buyer_recipient_name' => 'nullable|string|max:255',
+            'buyer_recipient_nip' => 'nullable|string|max:20',
+            'buyer_recipient_street' => 'nullable|string|max:255',
+            'buyer_recipient_building' => 'nullable|string|max:20',
+            'buyer_recipient_apartment' => 'nullable|string|max:20',
+            'buyer_recipient_postal_code' => 'nullable|string|max:20',
+            'buyer_recipient_city' => 'nullable|string|max:255',
         ]);
 
         if ($validated['number'] !== $invoice->number) {
@@ -331,6 +352,13 @@ class InvoiceController extends Controller
                 'buyer_apartment' => $contractor->address_apartment,
                 'buyer_postal_code' => $contractor->postal_code,
                 'buyer_city' => $contractor->city,
+                'buyer_recipient_name' => $validated['buyer_recipient_name'] ?? $contractor->recipient_name,
+                'buyer_recipient_nip' => $validated['buyer_recipient_nip'] ?? $contractor->recipient_nip,
+                'buyer_recipient_street' => $validated['buyer_recipient_street'] ?? $contractor->recipient_street,
+                'buyer_recipient_building' => $validated['buyer_recipient_building'] ?? $contractor->recipient_building,
+                'buyer_recipient_apartment' => $validated['buyer_recipient_apartment'] ?? $contractor->recipient_apartment,
+                'buyer_recipient_postal_code' => $validated['buyer_recipient_postal_code'] ?? $contractor->recipient_postal_code,
+                'buyer_recipient_city' => $validated['buyer_recipient_city'] ?? $contractor->recipient_city,
             ]);
 
             $invoice->items()->delete();
@@ -382,6 +410,13 @@ class InvoiceController extends Controller
                 'buyer_apartment' => $invoice->buyer_apartment,
                 'buyer_postal_code' => $invoice->buyer_postal_code,
                 'buyer_city' => $invoice->buyer_city,
+                'buyer_recipient_name' => $invoice->buyer_recipient_name,
+                'buyer_recipient_nip' => $invoice->buyer_recipient_nip,
+                'buyer_recipient_street' => $invoice->buyer_recipient_street,
+                'buyer_recipient_building' => $invoice->buyer_recipient_building,
+                'buyer_recipient_apartment' => $invoice->buyer_recipient_apartment,
+                'buyer_recipient_postal_code' => $invoice->buyer_recipient_postal_code,
+                'buyer_recipient_city' => $invoice->buyer_recipient_city,
             ]);
 
             $itemsData = $invoice->items->map(function ($item) {

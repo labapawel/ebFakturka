@@ -43,6 +43,13 @@ class Invoice extends Model
         'buyer_apartment',
         'buyer_postal_code',
         'buyer_city',
+        'buyer_recipient_name',
+        'buyer_recipient_nip',
+        'buyer_recipient_street',
+        'buyer_recipient_building',
+        'buyer_recipient_apartment',
+        'buyer_recipient_postal_code',
+        'buyer_recipient_city',
     ];
 
     public function scopeSales($query)

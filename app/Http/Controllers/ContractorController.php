@@ -64,6 +64,13 @@ class ContractorController extends Controller
             'ksef_customer_number' => 'nullable|string|max:100',
             'is_jst' => 'nullable|boolean',
             'is_vat_group_member' => 'nullable|boolean',
+            'recipient_name' => 'nullable|string|max:255',
+            'recipient_nip' => 'nullable|string|max:20',
+            'recipient_street' => 'nullable|string|max:255',
+            'recipient_building' => 'nullable|string|max:20',
+            'recipient_apartment' => 'nullable|string|max:20',
+            'recipient_postal_code' => 'nullable|string|max:20',
+            'recipient_city' => 'nullable|string|max:255',
         ]);
 
         $validated['is_jst'] = $request->boolean('is_jst');
@@ -110,6 +117,13 @@ class ContractorController extends Controller
             'ksef_customer_number' => 'nullable|string|max:100',
             'is_jst' => 'nullable|boolean',
             'is_vat_group_member' => 'nullable|boolean',
+            'recipient_name' => 'nullable|string|max:255',
+            'recipient_nip' => 'nullable|string|max:20',
+            'recipient_street' => 'nullable|string|max:255',
+            'recipient_building' => 'nullable|string|max:20',
+            'recipient_apartment' => 'nullable|string|max:20',
+            'recipient_postal_code' => 'nullable|string|max:20',
+            'recipient_city' => 'nullable|string|max:255',
         ]);
 
         $validated['is_jst'] = $request->boolean('is_jst');

@@ -97,12 +97,21 @@ class KsefService
 
             $podmiot2 = $xml->addChild('Podmiot2');
             $daneId2 = $podmiot2->addChild('DaneIdentyfikacyjne');
-            $daneId2->addChild('NIP', $invoice->contractor->nip ?? 'BRAK');
-            $daneId2->addChild('Nazwa', $this->contractorLegalName($invoice->contractor));
-            $this->appendContractorMainAddress($podmiot2, $invoice->contractor);
-            $this->appendContractorCorrespondenceData($podmiot2, $invoice->contractor);
+            $daneId2->addChild('NIP', $invoice->buyer_nip ?? 'BRAK');
+            $daneId2->addChild('Nazwa', $invoice->buyer_name);
+            $this->appendBuyerSnapshotAddress($podmiot2, $invoice);
             $podmiot2->addChild('JST', $this->booleanToKsefFlag((bool) ($invoice->contractor->is_jst ?? false)));
             $podmiot2->addChild('GV', $this->booleanToKsefFlag((bool) ($invoice->contractor->is_vat_group_member ?? false)));
+
+            if ($invoice->buyer_recipient_name) {
+                $podmiot3 = $xml->addChild('Podmiot3');
+                $daneId3 = $podmiot3->addChild('DaneIdentyfikacyjne');
+                if ($invoice->buyer_recipient_nip) {
+                    $daneId3->addChild('NIP', $invoice->buyer_recipient_nip);
+                }
+                $daneId3->addChild('Nazwa', $invoice->buyer_recipient_name);
+                $this->appendRecipientSnapshotAddress($podmiot3, $invoice);
+            }
         }
 
         $fa = $xml->addChild('Fa');
@@ -199,7 +208,15 @@ class KsefService
                     'buyer_building' => $invoiceData['buyer']['address_building'],
                     'buyer_apartment' => $invoiceData['buyer']['address_apartment'],
                     'buyer_postal_code' => $invoiceData['buyer']['postal_code'],
+                    'buyer_postal_code' => $invoiceData['buyer']['postal_code'],
                     'buyer_city' => $invoiceData['buyer']['city'],
+                    'buyer_recipient_name' => $invoiceData['recipient']['name'] ?? null,
+                    'buyer_recipient_nip' => $invoiceData['recipient']['nip'] ?? null,
+                    'buyer_recipient_street' => $invoiceData['recipient']['address_street'] ?? null,
+                    'buyer_recipient_building' => $invoiceData['recipient']['address_building'] ?? null,
+                    'buyer_recipient_apartment' => $invoiceData['recipient']['address_apartment'] ?? null,
+                    'buyer_recipient_postal_code' => $invoiceData['recipient']['postal_code'] ?? null,
+                    'buyer_recipient_city' => $invoiceData['recipient']['city'] ?? null,
                     'status' => 'issued',
                     'ksef_status' => 'fetched',
                 ]
@@ -384,6 +401,7 @@ class KsefService
 
         $contractor = $this->extractPodmiotData($xpath, 'Podmiot1');
         $buyer = $this->extractPodmiotData($xpath, 'Podmiot2');
+        $recipient = $this->extractPodmiotData($xpath, 'Podmiot3');
 
         if (empty($contractor['name'])) {
             throw new RuntimeException('Pobrana faktura z KSeF nie zawiera danych sprzedawcy.');
@@ -436,6 +454,7 @@ class KsefService
             'gross_total' => $grossTotal,
             'contractor' => $contractor,
             'buyer' => $buyer,
+            'recipient' => $recipient,
             'items' => $items,
         ];
     }
@@ -583,6 +602,36 @@ class KsefService
         }
 
         return $line;
+    }
+
+    private function appendBuyerSnapshotAddress(SimpleXMLElement $node, Invoice $invoice): void
+    {
+        $line1 = $this->formatAddressLine($invoice->buyer_street, $invoice->buyer_building, $invoice->buyer_apartment);
+        if ($line1 === '') return;
+
+        $address = $node->addChild('Adres');
+        $address->addChild('KodKraju', 'PL');
+        $address->addChild('AdresL1', $line1);
+
+        $line2 = trim(($invoice->buyer_postal_code ?? '').' '.($invoice->buyer_city ?? ''));
+        if ($line2 !== '') {
+            $address->addChild('AdresL2', $line2);
+        }
+    }
+
+    private function appendRecipientSnapshotAddress(SimpleXMLElement $node, Invoice $invoice): void
+    {
+        $line1 = $this->formatAddressLine($invoice->buyer_recipient_street, $invoice->buyer_recipient_building, $invoice->buyer_recipient_apartment);
+        if ($line1 === '') return;
+
+        $address = $node->addChild('Adres');
+        $address->addChild('KodKraju', 'PL');
+        $address->addChild('AdresL1', $line1);
+
+        $line2 = trim(($invoice->buyer_recipient_postal_code ?? '').' '.($invoice->buyer_recipient_city ?? ''));
+        if ($line2 !== '') {
+            $address->addChild('AdresL2', $line2);
+        }
     }
 
     private function appendPaymentData(SimpleXMLElement $fa, Invoice $invoice): void
