@@ -52,6 +52,7 @@
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><x-table-sort-link column="issue_date" label="Data wystawienia" :current-sort="request('sort', 'number')" :current-dir="request('dir', 'desc')" /></th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><x-table-sort-link column="contractor" :label="__('content.invoices.contractor')" :current-sort="request('sort', 'number')" :current-dir="request('dir', 'desc')" /></th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><x-table-sort-link column="gross_total" label="Kwota Brutto" :current-sort="request('sort', 'number')" :current-dir="request('dir', 'desc')" /></th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Księgowanie</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><x-table-sort-link column="status" :label="__('content.invoices.status')" :current-sort="request('sort', 'number')" :current-dir="request('dir', 'desc')" /></th>
                                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('content.common.actions') }}</th>
                                     </tr>
@@ -75,13 +76,37 @@
                                                 {{ number_format($invoice->gross_total, 2) }} {{ $invoice->currency->code }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="flex items-center gap-2">
+                                                    @if($invoice->is_booked)
+                                                        <span class="text-green-600" title="Zaksięgowano">
+                                                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                                                        </span>
+                                                    @else
+                                                        <span class="text-gray-300" title="Do zaksięgowania">
+                                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                        </span>
+                                                    @endif
+
+                                                    @if($invoice->accounting_note)
+                                                        <div class="relative group">
+                                                            <svg class="w-5 h-5 text-indigo-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path></svg>
+                                                            <div class="absolute left-full ml-2 bottom-0 hidden group-hover:block z-50 w-48 p-2 bg-gray-800 text-white text-xs rounded shadow-lg whitespace-normal">
+                                                                {{ $invoice->accounting_note }}
+                                                                <div class="absolute w-2 h-2 bg-gray-800 rotate-45 -left-1 bottom-2"></div>
+                                                            </div>
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
                                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                                                     {{ $invoice->ksef_status ?? 'Pobrana' }}
                                                 </span>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                <a href="{{ route('purchase_invoices.pdf', $invoice) }}" class="text-indigo-600 hover:text-indigo-900 mr-2">PDF</a>
-                                                <a href="{{ route('purchase_invoices.xml', $invoice) }}" class="text-indigo-600 hover:text-indigo-900">XML</a>
+                                                <a href="{{ route('purchase_invoices.show', $invoice) }}" class="text-indigo-600 hover:text-indigo-900 mr-2">Otwórz</a>
+                                                <a href="{{ route('purchase_invoices.pdf', $invoice) }}" class="text-gray-600 hover:text-gray-900 mr-2">PDF</a>
+                                                <a href="{{ route('purchase_invoices.xml', $invoice) }}" class="text-gray-600 hover:text-gray-900">XML</a>
                                             </td>
                                         </tr>
                                     @endforeach

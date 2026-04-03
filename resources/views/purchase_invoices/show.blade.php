@@ -108,7 +108,7 @@
                     </table>
 
                     <!-- Totals -->
-                    <div class="flex justify-end">
+                    <div class="flex justify-end mb-8">
                         <div class="w-1/3">
                             @if(!$isVatExempt || $invoice->type === 'purchase')
                             <div class="flex justify-between py-1 border-b">
@@ -125,6 +125,35 @@
                                 <span>{{ number_format($invoice->gross_total, 2) }} {{ $invoice->currency->code }}</span>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Accounting Form -->
+                    <div class="mt-8 pt-8 border-t border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Informacje Księgowe</h3>
+                        <form action="{{ route('purchase_invoices.update', $invoice) }}" method="POST" class="bg-gray-50 p-6 rounded-lg border border-gray-100">
+                            @csrf
+                            @method('PUT')
+                            
+                            <div class="flex flex-col gap-4">
+                                <div>
+                                    <label class="inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" name="is_booked" value="1" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" @checked($invoice->is_booked)>
+                                        <span class="ml-2 text-sm text-gray-600 font-medium font-bold">Faktura zaksięgowana</span>
+                                    </label>
+                                </div>
+                                
+                                <div>
+                                    <label for="accounting_note" class="block text-sm font-medium text-gray-700 mb-1">Opis do faktury</label>
+                                    <textarea id="accounting_note" name="accounting_note" rows="3" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 mt-1 block w-full sm:text-sm border-gray-300 rounded-md" placeholder="Dodaj wewnętrzny opis dla księgowości...">{{ $invoice->accounting_note }}</textarea>
+                                </div>
+                                
+                                <div>
+                                    <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                        Zapisz dane księgowe
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>

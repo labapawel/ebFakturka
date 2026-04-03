@@ -36,6 +36,7 @@ Route::middleware('auth')->group(function () {
     Route::get('purchase-invoices', [App\Http\Controllers\PurchaseInvoiceController::class, 'index'])->name('purchase_invoices.index');
     Route::post('purchase-invoices/fetch', [App\Http\Controllers\PurchaseInvoiceController::class, 'fetch'])->name('purchase_invoices.fetch');
     Route::get('purchase-invoices/{invoice}', [App\Http\Controllers\PurchaseInvoiceController::class, 'show'])->name('purchase_invoices.show');
+    Route::put('purchase-invoices/{invoice}', [App\Http\Controllers\PurchaseInvoiceController::class, 'update'])->name('purchase_invoices.update');
     Route::get('purchase-invoices/{invoice}/pdf', [App\Http\Controllers\PurchaseInvoiceController::class, 'downloadPdf'])->name('purchase_invoices.pdf');
     Route::get('purchase-invoices/{invoice}/xml', [App\Http\Controllers\PurchaseInvoiceController::class, 'downloadXml'])->name('purchase_invoices.xml');
 
