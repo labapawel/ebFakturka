@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
@@ -64,6 +64,15 @@
                 {{ $buyerStreet }} {{ $buyerBuilding }}@if($buyerApartment)/{{ $buyerApartment }}@endif<br>
                 {{ $buyerPostalCode }} {{ $buyerCity }}<br>
                 NIP: {{ $buyerNip }}
+
+                @if($invoice->buyer_recipient_name)
+                <br><br>
+                <strong>Odbiorca (JST):</strong><br>
+                {{ $invoice->buyer_recipient_name }}<br>
+                @if($invoice->buyer_recipient_nip) NIP: {{ $invoice->buyer_recipient_nip }}<br> @endif
+                {{ $invoice->buyer_recipient_street }} {{ $invoice->buyer_recipient_building }}@if($invoice->buyer_recipient_apartment)/{{ $invoice->buyer_recipient_apartment }}@endif<br>
+                {{ $invoice->buyer_recipient_postal_code }} {{ $invoice->buyer_recipient_city }}
+                @endif
             </td>
         </tr>
     </table>

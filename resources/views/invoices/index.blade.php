@@ -1,6 +1,16 @@
-﻿<x-app-layout>
+<x-app-layout>
     <x-slot name="topbar">
-        <form method="GET" class="w-full max-w-xl" oninput="clearTimeout(this._searchTimeout); this._searchTimeout = setTimeout(() => this.requestSubmit(), 400);">
+    </x-slot>
+
+    <x-slot name="header">
+        <div class="flex flex-col gap-3 sm:flex-row  sm:justify-between">
+            <h2 class="flex flex-col gap-2 sm:flex-row font-semibold text-xl text-gray-800 leading-tight">
+                {{ __('content.invoices.title') }}
+            </h2>
+            <div class="grid grid-cols-4 gap-2">
+            <div class="col-span-2">
+
+            <form method="GET" class="w-full max-w-xl" oninput="clearTimeout(this._searchTimeout); this._searchTimeout = setTimeout(() => this.requestSubmit(), 400);">
             <input type="hidden" name="sort" value="{{ request('sort', 'number') }}">
             <input type="hidden" name="dir" value="{{ request('dir', 'desc') }}">
             <input type="hidden" name="per_page" value="{{ request('per_page', 10) }}">
@@ -13,16 +23,10 @@
                 class="w-full rounded-md border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             >
         </form>
-    </x-slot>
+        </div>
 
-    <x-slot name="header">
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('content.invoices.title') }}
-            </h2>
-
-            <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
-                <form method="GET" class="flex items-center gap-2">
+            <div class="col-span-1 ">
+                <form method="GET" class=" ">
                     <input type="hidden" name="q" value="{{ request('q') }}">
                     <input type="hidden" name="sort" value="{{ request('sort', 'number') }}">
                     <input type="hidden" name="dir" value="{{ request('dir', 'desc') }}">
@@ -39,10 +43,13 @@
                         @endforeach
                     </select>
                 </form>
+                </div>
+                <div class="col-span-1">
 
                 <a href="{{ route('invoices.create') }}" class="inline-flex items-center justify-center rounded-md bg-indigo-600 px-3 py-2 text-xs font-semibold uppercase tracking-widest text-white transition hover:bg-indigo-500">
                     {{ __('content.invoices.issue_invoice') }}
                 </a>
+            </div>
             </div>
         </div>
     </x-slot>
@@ -103,5 +110,3 @@
         </div>
     </div>
 </x-app-layout>
-
-

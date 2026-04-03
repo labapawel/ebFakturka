@@ -7,8 +7,8 @@
     <input type="hidden" name="sort" value="{{ request('sort') }}">
     <input type="hidden" name="dir" value="{{ request('dir') }}">
 
-    <div class="grid gap-4 lg:grid-cols-4 lg:items-end">
-        <div class="lg:col-span-3 lg:max-w-none">
+    <div class="grid gap-4 grid-cols-4 lg:grid-cols-4 lg:items-end">
+        <div class="col-span-2 lg:col-span-3 lg:max-w-none">
             <label for="table-search" class="mb-1 block text-sm font-medium text-gray-700">Szukaj</label>
             <input
                 id="table-search"
