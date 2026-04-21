@@ -77,13 +77,17 @@
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <div class="flex items-center gap-2">
-                                                    @if($invoice->is_booked)
+                                                    @if($invoice->booking_status === 'booked')
                                                         <span class="text-green-600" title="Zaksięgowano">
                                                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
                                                         </span>
+                                                    @elseif($invoice->booking_status === 'do_not_book')
+                                                        <span class="text-red-500" title="Nie księguj">
+                                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                        </span>
                                                     @else
-                                                        <span class="text-gray-300" title="Do zaksięgowania">
-                                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                        <span class="text-gray-300" title="Do księgowania">
+                                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                                         </span>
                                                     @endif
 
@@ -104,7 +108,8 @@
                                                 </span>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                <a href="{{ route('purchase_invoices.show', $invoice) }}" class="text-indigo-600 hover:text-indigo-900 mr-2">Otwórz</a>
+                                                <a href="{{ route('purchase_invoices.edit', $invoice) }}" class="text-indigo-600 hover:text-indigo-900 mr-2 font-bold">Edytuj</a>
+                                                <a href="{{ route('purchase_invoices.show', $invoice) }}" class="text-gray-600 hover:text-gray-900 mr-2">Podgląd</a>
                                                 <a href="{{ route('purchase_invoices.pdf', $invoice) }}" class="text-gray-600 hover:text-gray-900 mr-2">PDF</a>
                                                 <a href="{{ route('purchase_invoices.xml', $invoice) }}" class="text-gray-600 hover:text-gray-900">XML</a>
                                             </td>

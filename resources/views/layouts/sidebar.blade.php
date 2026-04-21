@@ -75,7 +75,7 @@
                 </div>
             </div>
 
-            <div x-cloak x-data="{ open: localStorage.getItem('sidebar_config') ? localStorage.getItem('sidebar_config') === 'true' : {{ request()->routeIs('vat_rates.*', 'currencies.*', 'users.*', 'settings.*') ? 'true' : 'false' }} }" x-init="$watch('open', value => localStorage.setItem('sidebar_config', value))">
+            <div x-cloak x-data="{ open: localStorage.getItem('sidebar_config') ? localStorage.getItem('sidebar_config') === 'true' : {{ request()->routeIs('vat_rates.*', 'currencies.*', 'users.*', 'settings.*', 'backups.*') ? 'true' : 'false' }} }" x-init="$watch('open', value => localStorage.setItem('sidebar_config', value))">
                 <button @click="open = !open" type="button" class="w-full flex justify-between items-center px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 mt-6 focus:outline-none hover:text-slate-300 transition-colors">
                     <span>{{ __('content.nav.configuration') }}</span>
                     <svg :class="{'rotate-180': open, 'rotate-0': !open}" class="w-4 h-4 transition-transform text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -113,6 +113,13 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                         {{ __('content.nav.settings') }}
+                    </a>
+                    
+                    <a href="{{ route('backups.index') }}" class="group flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('backups.*') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                        <svg class="mr-3 h-5 w-5 {{ request()->routeIs('backups.*') ? 'text-white' : 'text-slate-400 group-hover:text-white' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                        </svg>
+                        {{ __('content.nav.backups') }}
                     </a>
                     @endif
                 </div>

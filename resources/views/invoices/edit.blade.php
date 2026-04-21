@@ -180,6 +180,50 @@
                     </div>
                 </div>
 
+                <!-- Internal Accounting -->
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
+                    <div class="p-6 text-gray-900 border-t-4 border-indigo-100">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Wewnętrzne dane księgowe</h3>
+                        
+                        <div class="flex flex-col gap-6">
+                            <div class="mb-2">
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Status księgowania</label>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <label class="relative flex items-center p-4 rounded-lg border cursor-pointer hover:bg-gray-50 {{ old('booking_status', $invoice->booking_status) === 'to_book' ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200' }}">
+                                        <input type="radio" name="booking_status" value="to_book" class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500" {{ old('booking_status', $invoice->booking_status) === 'to_book' ? 'checked' : '' }}>
+                                        <div class="ml-3">
+                                            <span class="block text-sm font-medium text-gray-900">Do księgowania</span>
+                                            <span class="block text-xs text-gray-500 mt-1">Faktura czeka na zaksięgowanie</span>
+                                        </div>
+                                    </label>
+                                    
+                                    <label class="relative flex items-center p-4 rounded-lg border cursor-pointer hover:bg-green-50 {{ old('booking_status', $invoice->booking_status) === 'booked' ? 'border-green-500 bg-green-50' : 'border-gray-200' }}">
+                                        <input type="radio" name="booking_status" value="booked" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500" {{ old('booking_status', $invoice->booking_status) === 'booked' ? 'checked' : '' }}>
+                                        <div class="ml-3">
+                                            <span class="block text-sm font-medium text-gray-900">Zaksięgowano</span>
+                                            <span class="block text-xs text-gray-500 mt-1">Faktura wprowadzona do ksiąg</span>
+                                        </div>
+                                    </label>
+                                    
+                                    <label class="relative flex items-center p-4 rounded-lg border cursor-pointer hover:bg-red-50 {{ old('booking_status', $invoice->booking_status) === 'do_not_book' ? 'border-red-500 bg-red-50' : 'border-gray-200' }}">
+                                        <input type="radio" name="booking_status" value="do_not_book" class="h-4 w-4 text-red-600 border-gray-300 focus:ring-red-500" {{ old('booking_status', $invoice->booking_status) === 'do_not_book' ? 'checked' : '' }}>
+                                        <div class="ml-3">
+                                            <span class="block text-sm font-medium text-gray-900">Nie księguj</span>
+                                            <span class="block text-xs text-gray-500 mt-1">Wyłączono z ewidencji</span>
+                                        </div>
+                                    </label>
+                                </div>
+                                <x-input-error :messages="$errors->get('booking_status')" class="mt-2" />
+                            </div>
+                            
+                            <div>
+                                <label for="accounting_note" class="block text-sm font-bold text-gray-700 mb-2">Opis księgowy / Notatka wewnętrzna</label>
+                                <textarea id="accounting_note" name="accounting_note" rows="3" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 mt-1 block w-full sm:text-sm border-gray-300 rounded-md" placeholder="Dodaj wewnętrzny opis dla księgowości (np. dodatkowe informacje do kosztorysu)...">{{ old('accounting_note', $invoice->accounting_note) }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Totals -->
                 <div class="flex justify-end mb-6">
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg w-1/3 p-6">

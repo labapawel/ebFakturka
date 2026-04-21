@@ -42,6 +42,7 @@ return [
         'sales' => 'Sales',
         'purchases' => 'Purchases',
         'configuration' => 'Configuration',
+        'backups' => 'Backups',
     ],
     'profile' => [
         'profile_information' => 'Profile Information',

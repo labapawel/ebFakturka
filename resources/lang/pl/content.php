@@ -42,6 +42,7 @@ return [
         'sales' => 'Sprzedaż',
         'purchases' => 'Zakupy',
         'configuration' => 'Konfiguracja',
+        'backups' => 'Kopie zapasowe',
     ],
     'profile' => [
         'profile_information' => 'Informacje o profilu',

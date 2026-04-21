@@ -36,6 +36,7 @@ Route::middleware('auth')->group(function () {
     Route::get('purchase-invoices', [App\Http\Controllers\PurchaseInvoiceController::class, 'index'])->name('purchase_invoices.index');
     Route::post('purchase-invoices/fetch', [App\Http\Controllers\PurchaseInvoiceController::class, 'fetch'])->name('purchase_invoices.fetch');
     Route::get('purchase-invoices/{invoice}', [App\Http\Controllers\PurchaseInvoiceController::class, 'show'])->name('purchase_invoices.show');
+    Route::get('purchase-invoices/{invoice}/edit', [App\Http\Controllers\PurchaseInvoiceController::class, 'edit'])->name('purchase_invoices.edit');
     Route::put('purchase-invoices/{invoice}', [App\Http\Controllers\PurchaseInvoiceController::class, 'update'])->name('purchase_invoices.update');
     Route::get('purchase-invoices/{invoice}/pdf', [App\Http\Controllers\PurchaseInvoiceController::class, 'downloadPdf'])->name('purchase_invoices.pdf');
     Route::get('purchase-invoices/{invoice}/xml', [App\Http\Controllers\PurchaseInvoiceController::class, 'downloadXml'])->name('purchase_invoices.xml');
@@ -53,6 +54,11 @@ Route::middleware('auth')->group(function () {
     // Settings
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::post('/settings', [SettingsController::class, 'update'])->name('settings.update');
+
+    // Backups
+    Route::get('/backups', [\App\Http\Controllers\BackupController::class, 'index'])->name('backups.index');
+    Route::get('/backups/export', [\App\Http\Controllers\BackupController::class, 'export'])->name('backups.export');
+    Route::post('/backups/import', [\App\Http\Controllers\BackupController::class, 'import'])->name('backups.import');
 });
 
 // Language Switcher

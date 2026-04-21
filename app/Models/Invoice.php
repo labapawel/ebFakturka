@@ -50,7 +50,7 @@ class Invoice extends Model
         'buyer_recipient_apartment',
         'buyer_recipient_postal_code',
         'buyer_recipient_city',
-        'is_booked',
+        'booking_status',
         'accounting_note',
     ];
 
@@ -71,7 +71,6 @@ class Invoice extends Model
         'net_total' => 'decimal:2',
         'vat_total' => 'decimal:2',
         'gross_total' => 'decimal:2',
-        'is_booked' => 'boolean',
     ];
 
     public function contractor()

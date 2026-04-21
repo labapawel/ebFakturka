@@ -286,6 +286,8 @@ class InvoiceController extends Controller
             'buyer_recipient_apartment' => 'nullable|string|max:20',
             'buyer_recipient_postal_code' => 'nullable|string|max:20',
             'buyer_recipient_city' => 'nullable|string|max:255',
+            'booking_status' => 'required|string|in:to_book,booked,do_not_book',
+            'accounting_note' => 'nullable|string'
         ]);
 
         if ($validated['number'] !== $invoice->number) {
@@ -359,6 +361,8 @@ class InvoiceController extends Controller
                 'buyer_recipient_apartment' => $validated['buyer_recipient_apartment'] ?? $contractor->recipient_apartment,
                 'buyer_recipient_postal_code' => $validated['buyer_recipient_postal_code'] ?? $contractor->recipient_postal_code,
                 'buyer_recipient_city' => $validated['buyer_recipient_city'] ?? $contractor->recipient_city,
+                'booking_status' => $validated['booking_status'],
+                'accounting_note' => $validated['accounting_note'],
             ]);
 
             $invoice->items()->delete();

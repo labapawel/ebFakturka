@@ -61,6 +61,17 @@ class PurchaseInvoiceController extends Controller
         return view('purchase_invoices.show', compact('invoice', 'isVatExempt'));
     }
 
+    public function edit(Invoice $invoice)
+    {
+        if ($invoice->type !== 'purchase') {
+            abort(404);
+        }
+
+        $isVatExempt = VatSettings::isExempt();
+
+        return view('purchase_invoices.edit', compact('invoice', 'isVatExempt'));
+    }
+
     public function update(Request $request, Invoice $invoice)
     {
         if ($invoice->type !== 'purchase') {
@@ -68,16 +79,16 @@ class PurchaseInvoiceController extends Controller
         }
 
         $validated = $request->validate([
-            'is_booked' => 'nullable|boolean',
+            'booking_status' => 'required|string|in:to_book,booked,do_not_book',
             'accounting_note' => 'nullable|string'
         ]);
 
         $invoice->update([
-            'is_booked' => $request->boolean('is_booked'),
+            'booking_status' => $request->input('booking_status'),
             'accounting_note' => $request->input('accounting_note'),
         ]);
 
-        return redirect()->route('purchase_invoices.show', $invoice)->with('success', 'Dane księgowe zostały zaktualizowane.');
+        return redirect()->route('purchase_invoices.index')->with('success', 'Dane księgowe zostały zaktualizowane.');
     }
 
     public function fetch(Request $request, KsefClient $client, KsefService $service)
