@@ -1,0 +1,81 @@
+UMOWA LICENCYJNA UŻYTKOWNIKA KOŃCOWEGO (EULA)
+ebFakturka — Oprogramowanie do fakturowania
+=============================================
+
+Copyright (c) 2024 Paweł Łabap. Wszelkie prawa zastrzeżone.
+
+PROSZĘ UWAŻNIE PRZECZYTAĆ NINIEJSZĄ UMOWĘ LICENCYJNĄ PRZED ZAINSTALOWANIEM
+LUB UŻYWANIEM OPROGRAMOWANIA ebFakturka ("Oprogramowanie").
+
+Poprzez zainstalowanie, skopiowanie lub używanie Oprogramowania wyrażasz zgodę
+na warunki niniejszej Umowy.
+
+1. UDZIELENIE LICENCJI
+   Niniejsza Umowa przyznaje Ci niewyłączną, nieprzenoszalną licencję na
+   używanie Oprogramowania dla własnych potrzeb biznesowych lub osobistych,
+   pod warunkiem przestrzegania postanowień niniejszej Umowy.
+
+2. OGRANICZENIA
+   Nie możesz:
+   a) sprzedawać, wynajmować ani sublicencjonować Oprogramowania;
+   b) modyfikować ani tworzyć dzieł pochodnych bez pisemnej zgody;
+   c) używać Oprogramowania do celów niezgodnych z prawem;
+   d) usuwać informacji o prawach autorskich.
+
+3. PRYWATNOŚĆ I DANE
+   Oprogramowanie przetwarza dane firmy wyłącznie lokalnie. Żadne dane
+   nie są przesyłane do zewnętrznych serwerów bez Twojej zgody.
+
+4. BRAK GWARANCJI
+   Oprogramowanie jest dostarczane "tak jak jest", bez jakiejkolwiek
+   gwarancji, wyraźnej lub dorozumianej.
+
+5. OGRANICZENIE ODPOWIEDZIALNOŚCI
+   W żadnym przypadku producent nie ponosi odpowiedzialności za
+   jakiekolwiek szkody wynikające z użytkowania Oprogramowania.
+
+6. KONTAKT
+   W przypadku pytań dotyczących tej Umowy skontaktuj się z:
+   labapawel@gmail.com
+
+---
+
+END USER LICENSE AGREEMENT (EULA)
+ebFakturka — Invoicing Software
+=================================
+
+Copyright (c) 2024 Paweł Łabap. All rights reserved.
+
+PLEASE READ THIS AGREEMENT CAREFULLY BEFORE INSTALLING OR USING
+THE ebFakturka SOFTWARE ("Software").
+
+By installing, copying, or otherwise using the Software, you agree
+to be bound by the terms of this Agreement.
+
+1. GRANT OF LICENSE
+   This Agreement grants you a non-exclusive, non-transferable license
+   to use the Software for your own business or personal purposes,
+   subject to the terms herein.
+
+2. RESTRICTIONS
+   You may not:
+   a) sell, rent, or sublicense the Software;
+   b) modify or create derivative works without written permission;
+   c) use the Software for unlawful purposes;
+   d) remove copyright notices.
+
+3. PRIVACY AND DATA
+   The Software processes company data locally only. No data is
+   transmitted to external servers without your consent.
+
+4. NO WARRANTY
+   THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+   EXPRESS OR IMPLIED.
+
+5. LIMITATION OF LIABILITY
+   IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DAMAGES ARISING
+   FROM THE USE OF THIS SOFTWARE.
+
+6. CONTACT
+   For questions regarding this Agreement, contact:
+   labapawel@gmail.com
