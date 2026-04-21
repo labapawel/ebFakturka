@@ -100,12 +100,12 @@
                 <th width="35%">{{ __('content.invoices.name') }}</th>
                 <th style="text-align: right;">{{ __('content.common.quantity') }}</th>
             <th style="text-align: left;">J.M.</th>
-            <th style="text-align: right;">Cena @if(!$isVatExempt || $invoice->type === 'purchase') Netto @else @endif</th>
-            @if(!$isVatExempt || $invoice->type === 'purchase')
+            <th style="text-align: right;">Cena @if(!$isVatExempt) Netto @endif</th>
+            @if(!$isVatExempt)
             <th style="text-align: right;">VAT</th>
             <th style="text-align: right;">Wartość Netto</th>
             @endif
-            <th style="text-align: right;">Wartość @if(!$isVatExempt || $invoice->type === 'purchase') Brutto @else @endif</th>
+            <th style="text-align: right;">Wartość @if(!$isVatExempt) Brutto @endif</th>
         </tr>
     </thead>
         <tbody>
@@ -116,7 +116,7 @@
                     <td style="text-align: right;">{{ number_format($item->quantity, 2) }}</td>
             <td style="text-align: left;">{{ $item->unit }}</td>
             <td style="text-align: right;">{{ number_format($item->net_price, 2) }}</td>
-            @if(!$isVatExempt || $invoice->type === 'purchase')
+            @if(!$isVatExempt)
             <td style="text-align: right;">{{ $item->vat_rate ? ($item->vat_rate * 100) . '%' : 'ZW' }}</td>
             <td style="text-align: right;">{{ number_format($item->quantity * $item->net_price, 2) }}</td>
             @endif
@@ -127,7 +127,7 @@
     </table>
 
     <table class="totals-table">
-        @if(!$isVatExempt || $invoice->type === 'purchase')
+        @if(!$isVatExempt)
         <tr>
             <td>Razem Netto:</td>
             <td class="text-right">{{ number_format($invoice->net_total, 2) }} {{ $invoice->currency->code }}</td>
@@ -153,7 +153,7 @@
         Konto: <strong>{{ $bankAccount ?: 'Brak numeru konta' }}</strong>
     </div>
 
-    @if($isVatExempt && $invoice->type !== 'purchase' && !empty($vatExemptionReason))
+    @if($isVatExempt && !empty($vatExemptionReason))
         <div style="margin-top: 50px; font-size: 10px; border-top: 1px solid #ccc; padding-top: 10px;">
             Podstawa prawna zwolnienia z VAT: {{ $vatExemptionReason }}.
         </div>

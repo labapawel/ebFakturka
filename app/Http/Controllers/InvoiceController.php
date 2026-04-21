@@ -468,6 +468,17 @@ class InvoiceController extends Controller
 
     public function downloadXml(Invoice $invoice, KsefService $ksefService)
     {
+        // Dla wysłanych faktur serwuj zarchiwizowany XML (dokładnie to co trafiło do KSeF)
+        if ($invoice->ksef_status === 'sent' && $invoice->ksef_number) {
+            $archived = $ksefService->getStoredSentXmlContents($invoice);
+            if ($archived !== null) {
+                return response($archived, 200, [
+                    'Content-Type' => 'application/xml',
+                    'Content-Disposition' => 'attachment; filename="faktura-' . str_replace('/', '_', $invoice->number) . '.xml"',
+                ]);
+            }
+        }
+
         $xml = $ksefService->generateXml($invoice);
 
         return response($xml, 200, [
@@ -506,6 +517,8 @@ class InvoiceController extends Controller
                     'ksef_status' => 'sent',
                     'ksef_number' => $ksefNumber,
                 ]);
+
+                $ksefService->storeSentXml($ksefNumber, $xml);
 
                 return back()->with('success', "Faktura wysłana do KSeF. Numer KSeF: {$ksefNumber}");
             }

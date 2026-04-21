@@ -6,7 +6,6 @@ use App\Models\Invoice;
 use App\Services\KsefClient;
 use App\Services\KsefService;
 use App\Support\TableFilters;
-use App\Support\VatSettings;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -50,24 +49,27 @@ class PurchaseInvoiceController extends Controller
         return view('purchase_invoices.index', compact('invoices'));
     }
 
-    public function show(Invoice $invoice)
+    public function show(Invoice $invoice, KsefService $ksefService)
     {
         if ($invoice->type !== 'purchase') {
             abort(404);
         }
 
-        $isVatExempt = VatSettings::isExempt();
+        $exemption = $ksefService->extractVatExemptionFromXml($invoice);
+        $isVatExempt = $exemption['is_exempt'];
+        $vatExemptionReason = $exemption['reason'];
 
-        return view('purchase_invoices.show', compact('invoice', 'isVatExempt'));
+        return view('purchase_invoices.show', compact('invoice', 'isVatExempt', 'vatExemptionReason'));
     }
 
-    public function edit(Invoice $invoice)
+    public function edit(Invoice $invoice, KsefService $ksefService)
     {
         if ($invoice->type !== 'purchase') {
             abort(404);
         }
 
-        $isVatExempt = VatSettings::isExempt();
+        $exemption = $ksefService->extractVatExemptionFromXml($invoice);
+        $isVatExempt = $exemption['is_exempt'];
 
         return view('purchase_invoices.edit', compact('invoice', 'isVatExempt'));
     }
@@ -142,10 +144,11 @@ class PurchaseInvoiceController extends Controller
         }
     }
 
-    public function downloadPdf(Invoice $invoice)
+    public function downloadPdf(Invoice $invoice, KsefService $ksefService)
     {
-        $isVatExempt = VatSettings::isExempt();
-        $vatExemptionReason = VatSettings::legalBasis();
+        $exemption = $ksefService->extractVatExemptionFromXml($invoice);
+        $isVatExempt = $exemption['is_exempt'];
+        $vatExemptionReason = $exemption['reason'];
         $pdf = Pdf::loadView('invoices.pdf', compact('invoice', 'isVatExempt', 'vatExemptionReason'));
 
         return $pdf->download('Faktura_Zakupowa_' . str_replace('/', '_', $invoice->number) . '.pdf');

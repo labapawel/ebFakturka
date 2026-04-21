@@ -231,6 +231,39 @@ class KsefService
         });
     }
 
+    public function extractVatExemptionFromXml(Invoice $invoice): array
+    {
+        $xml = $this->getStoredXmlContents($invoice);
+
+        if (!$xml) {
+            return [
+                'is_exempt' => $invoice->vat_total == 0 && $invoice->net_total > 0,
+                'reason' => null,
+            ];
+        }
+
+        $doc = new \DOMDocument();
+        if (!@$doc->loadXML($xml)) {
+            return ['is_exempt' => false, 'reason' => null];
+        }
+
+        $xpath = new \DOMXPath($doc);
+        $p19 = trim((string) $xpath->evaluate("string(//*[local-name()='Zwolnienie']/*[local-name()='P_19'])"));
+
+        if ($p19 !== '1') {
+            return ['is_exempt' => false, 'reason' => null];
+        }
+
+        foreach (['P_19A', 'P_19B', 'P_19C'] as $field) {
+            $reason = trim((string) $xpath->evaluate("string(//*[local-name()='Zwolnienie']/*[local-name()='{$field}'])"));
+            if ($reason !== '') {
+                return ['is_exempt' => true, 'reason' => $reason];
+            }
+        }
+
+        return ['is_exempt' => true, 'reason' => null];
+    }
+
     public function getStoredXmlContents(Invoice|string $invoice): ?string
     {
         $path = $this->storedXmlPath($invoice instanceof Invoice ? $invoice->ksef_number : $invoice);
@@ -251,6 +284,34 @@ class KsefService
         $safeName = preg_replace('/[^A-Za-z0-9._-]/', '_', $ksefNumber);
 
         return "ksef/invoices/{$safeName}.xml";
+    }
+
+    public function storedSentXmlPath(?string $ksefNumber): ?string
+    {
+        if (!$ksefNumber) {
+            return null;
+        }
+
+        $safeName = preg_replace('/[^A-Za-z0-9._-]/', '_', $ksefNumber);
+
+        return "ksef/sent/{$safeName}.xml";
+    }
+
+    public function storeSentXml(string $ksefNumber, string $xml): void
+    {
+        Storage::disk('local')->put($this->storedSentXmlPath($ksefNumber), $xml);
+    }
+
+    public function getStoredSentXmlContents(Invoice|string $invoice): ?string
+    {
+        $ksefNumber = $invoice instanceof Invoice ? $invoice->ksef_number : $invoice;
+        $path = $this->storedSentXmlPath($ksefNumber);
+
+        if (!$path || !Storage::disk('local')->exists($path)) {
+            return null;
+        }
+
+        return Storage::disk('local')->get($path);
     }
 
     private function normalizeKsefInvoicePayload(string $payload): string

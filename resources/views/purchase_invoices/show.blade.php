@@ -73,6 +73,13 @@
                         </div>
                     </div>
 
+                    @if($isVatExempt && !empty($vatExemptionReason))
+                    <div class="mb-8 p-4 bg-amber-50 border border-amber-200 rounded">
+                        <span class="block text-amber-700 text-sm mb-1">Podstawa prawna zwolnienia z VAT</span>
+                        <p class="text-amber-900">{{ $vatExemptionReason }}</p>
+                    </div>
+                    @endif
+
                     <!-- Items -->
                     <table class="min-w-full divide-y divide-gray-200 mb-8">
                         <thead class="bg-gray-50">
@@ -81,12 +88,12 @@
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">{{ __('content.invoices.name') }}</th>
                                 <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">{{ __('content.common.quantity') }}</th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">JM</th>
-                                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Cena @if(!$isVatExempt || $invoice->type === 'purchase') Netto @else @endif</th>
-                                @if(!$isVatExempt || $invoice->type === 'purchase')
+                                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Cena @if(!$isVatExempt) Netto @else @endif</th>
+                                @if(!$isVatExempt)
                                 <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">VAT</th>
                                 <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Wartość Netto</th>
                                 @endif
-                                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Wartość @if(!$isVatExempt || $invoice->type === 'purchase') Brutto @else @endif</th>
+                                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Wartość @if(!$isVatExempt) Brutto @else @endif</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
@@ -97,7 +104,7 @@
                                     <td class="px-4 py-2 text-right">{{ number_format($item->quantity, 2) }}</td>
                                     <td class="px-4 py-2">{{ $item->unit }}</td>
                                     <td class="px-4 py-2 text-right">{{ number_format($item->net_price, 2) }}</td>
-                                    @if(!$isVatExempt || $invoice->type === 'purchase')
+                                    @if(!$isVatExempt)
                                     <td class="px-4 py-2 text-right">{{ $item->vat_rate * 100 }}%</td>
                                     <td class="px-4 py-2 text-right">{{ number_format($item->quantity * $item->net_price, 2) }}</td>
                                     @endif
@@ -110,7 +117,7 @@
                     <!-- Totals -->
                     <div class="flex justify-end mb-8">
                         <div class="w-1/3">
-                            @if(!$isVatExempt || $invoice->type === 'purchase')
+                            @if(!$isVatExempt)
                             <div class="flex justify-between py-1 border-b">
                                 <span>Razem Netto:</span>
                                 <span>{{ number_format($invoice->net_total, 2) }} {{ $invoice->currency->code }}</span>
