@@ -8,6 +8,21 @@ if [ -z "$APP_KEY" ] || [ "$APP_KEY" = "" ]; then
     php artisan key:generate --force
 fi
 
+# Wait for external database to be reachable
+if [ "$DB_CONNECTION" = "mysql" ] || [ "$DB_CONNECTION" = "pgsql" ]; then
+    HOST="${DB_HOST:-localhost}"
+    PORT="${DB_PORT}"
+    if [ -z "$PORT" ]; then
+        [ "$DB_CONNECTION" = "mysql" ] && PORT=3306 || PORT=5432
+    fi
+
+    echo "Waiting for $DB_CONNECTION at $HOST:$PORT..."
+    until nc -z "$HOST" "$PORT" 2>/dev/null; do
+        sleep 1
+    done
+    echo "Database is reachable."
+fi
+
 # Ensure SQLite database file exists
 if [ "$DB_CONNECTION" = "sqlite" ]; then
     DB_PATH="${DB_DATABASE:-/var/www/html/database/database.sqlite}"

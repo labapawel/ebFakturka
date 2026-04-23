@@ -33,13 +33,17 @@ RUN apk add --no-cache \
     sqlite-dev \
     oniguruma-dev \
     libxml2-dev \
-    curl-dev
+    curl-dev \
+    mariadb-dev \
+    postgresql-dev
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) \
         pdo \
         pdo_sqlite \
+        pdo_mysql \
+        pdo_pgsql \
         bcmath \
         mbstring \
         gd \
